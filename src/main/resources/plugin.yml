@@ -1,0 +1,7 @@
+name: Invites
+description: Invites and team creation for Events
+version: 1.0.0
+api-version: 1.8
+main: me.googas.invites.InvitesPlugin
+depend:
+  - Starbox
