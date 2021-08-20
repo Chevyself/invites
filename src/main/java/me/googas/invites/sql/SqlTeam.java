@@ -22,7 +22,7 @@ public class SqlTeam implements Team, SQLElement {
     @Getter @Setter
     private int id;
     @NonNull @Getter
-    private final String name;
+    private String name;
 
     public SqlTeam(int id, @NonNull String name) {
         this.id = id;
@@ -42,6 +42,15 @@ public class SqlTeam implements Team, SQLElement {
     public boolean disband() {
         if (Invites.getLoader().getSubloader(SqlTeamsSubloader.class).disband(this)) {
             this.getMembers().forEach(member -> member.leaveTeam());
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean rename(@NonNull String name) {
+        if (Invites.getLoader().getSubloader(SqlTeamsSubloader.class).rename(this, name)) {
+            this.name = name;
             return true;
         }
         return false;

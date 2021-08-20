@@ -45,6 +45,16 @@ public class SqlTeamsSubloader extends LazySQLSubloader implements TeamsSubloade
         return false;
     }
 
+    public boolean rename(@NonNull SqlTeam team, @NonNull String name) {
+        try {
+            PreparedStatement statement = this.formatStatement("UPDATE `teams` SET `name`='{0}' WHERE `id`={1};", name, team.getId());
+            return statement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            Invites.handle(e, () -> "Could not update name for team " + team);
+        }
+        return false;
+    }
+
     @Override
     public @NonNull SqlTeamsSubloader createTable() throws SQLException {
         this.statementOf(this.schema.getSql("teams.create-table")).execute();
@@ -80,7 +90,7 @@ public class SqlTeamsSubloader extends LazySQLSubloader implements TeamsSubloade
     public @NonNull Optional<SqlTeam> getTeam(int id) {
         return Optional.ofNullable(this.parent.getCache().get(SqlTeam.class, team -> team.getId() == id).orElseGet(() -> {
             try {
-                ResultSet resultSet = this.formatStatement("SELECT * FROM `teams` WHERE `id`={0} LIMIT 1;", id).executeQuery();
+                ResultSet resultSet = this.formatStatement("SELECT * FROM `teams` WHERE `id`={0};", id).executeQuery();
                 if (resultSet.next()) {
                     SqlTeam team = SqlTeam.of(resultSet);
                     this.parent.getCache().add(team);

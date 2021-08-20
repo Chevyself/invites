@@ -3,6 +3,7 @@ package me.googas.invites.commands;
 import lombok.Getter;
 import lombok.NonNull;
 import me.googas.commands.annotations.Free;
+import me.googas.commands.annotations.Multiple;
 import me.googas.commands.annotations.Required;
 import me.googas.commands.bukkit.CommandManager;
 import me.googas.commands.bukkit.StarboxBukkitCommand;
@@ -22,6 +23,7 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public class TeamCommand extends StarboxBukkitCommand {
 
@@ -46,7 +48,7 @@ public class TeamCommand extends StarboxBukkitCommand {
 
     public static class SubCommands {
         @Command(aliases = "create", description = "Create a team", permission = "invites.teams.create", async = true)
-        public Result create(TeamMember member, @Required(name = "name", description = "The name of the team") String name) throws TeamException {
+        public Result create(TeamMember member, @Multiple @Required(name = "name", description = "The name of the team") String name) throws TeamException {
             TeamsSubloader subloader = Invites.getLoader().getSubloader(TeamsSubloader.class);
             if (member.getTeam().isPresent()) {
                 return new Result("&cYou already have a team");
@@ -57,6 +59,23 @@ public class TeamCommand extends StarboxBukkitCommand {
                     Team team = subloader.createTeam(name, member);
                     return new Result("&7Your team: &6{0} &7has been created", team.getName());
                 }
+            }
+        }
+
+        @Command(aliases = "rename", description = "Rename your team", permission = "invites.teams.rename", async = true)
+        public Result rename(TeamMember member, @Multiple @Required(name = "name", description = "The new name of the team") String name) {
+            Optional<? extends Team> team = member.getTeam();
+            Optional<TeamRole> role = member.getRole();
+            if (team.isPresent() && (role.isPresent() && (role.get() == TeamRole.LEADER || role.get() == TeamRole.SUBLEADER))) {
+                if (team.get().rename(name)) {
+                    return new Result("&7Your team has been renamed");
+                } else {
+                    return new Result("&cYour team could not be renamed");
+                }
+            } else if (team.isPresent() && (!role.isPresent() || role.get() == TeamRole.NORMAL)) {
+                return new Result("&cYou are not the leader of your team");
+            } else {
+                return new Result("&cYou don't have a team");
             }
         }
 

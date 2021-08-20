@@ -10,6 +10,8 @@ public interface Team extends Catchable {
 
     boolean disband();
 
+    boolean rename(@NonNull String name);
+
     int getId();
 
     @NonNull
