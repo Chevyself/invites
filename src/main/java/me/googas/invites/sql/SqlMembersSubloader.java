@@ -97,6 +97,7 @@ public class SqlMembersSubloader extends LazySQLSubloader implements MembersSubl
             } else {
                 statement.setString(2, role.toString());
             }
+            statement.executeUpdate();
             return true;
         } catch (SQLException e) {
             Invites.handle(e, () -> "Could not set team for: " + member.getUniqueId());

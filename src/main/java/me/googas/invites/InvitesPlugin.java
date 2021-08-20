@@ -19,7 +19,6 @@ import me.googas.lazy.sql.LazySQL;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Optional;
@@ -40,19 +39,23 @@ public class InvitesPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         Invites.setPlugin(this);
+        ClassLoader loader = this.getClassLoader();
         StarboxFile pluginFolder = StarboxFile.of(this.getDataFolder());
         this.saveDefaultConfig();
         FileConfiguration config = this.getConfig();
         try {
             String url = config.getString("url", "file");
             LazySQL.LazySQLBuilder builder;
+            LazySchema schema;
             if (url.equals("file")) {
-                Class.forName("org.h2.Driver");
-                builder = LazySQL.at(new StarboxFile(pluginFolder, "database"), "h2");
+                Class.forName("org.sqlite.JDBC");
+                builder = LazySQL.at(new StarboxFile(pluginFolder, "database"), "sqlite");
+                schema = LazySchema.of(loader, LazySchema.Type.SQLITE);
             } else {
                 builder = LazySQL.at(config.getString("url"));
+                schema = LazySchema.of(loader, LazySchema.Type.SQL);
             }
-            this.loader = builder.add(new SqlMembersSubloader.Builder(), new SqlTeamsSubloader.Builder()).build().start();
+            this.loader = builder.add(new SqlMembersSubloader.Builder(), new SqlTeamsSubloader.Builder(schema)).build().start();
         } catch (SQLException | ClassNotFoundException e) {
             Invites.handle(e, () -> "Could not connect to database");
             this.setEnabled(false);

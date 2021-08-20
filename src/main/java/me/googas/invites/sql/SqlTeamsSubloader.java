@@ -19,13 +19,18 @@ import java.util.Optional;
 
 public class SqlTeamsSubloader extends LazySQLSubloader implements TeamsSubloader {
 
+    @NonNull
+    private final LazySchema schema;
+
     /**
      * Start the subloader.
      *
      * @param parent the sql parent
+     * @param schema
      */
-    protected SqlTeamsSubloader(@NonNull LazySQL parent) {
+    protected SqlTeamsSubloader(@NonNull LazySQL parent, @NonNull LazySchema schema) {
         super(parent);
+        this.schema = schema;
     }
 
     public boolean disband(@NonNull SqlTeam team) {
@@ -42,10 +47,7 @@ public class SqlTeamsSubloader extends LazySQLSubloader implements TeamsSubloade
 
     @Override
     public @NonNull SqlTeamsSubloader createTable() throws SQLException {
-        this.statementOf("CREATE TABLE IF NOT EXISTS `teams` (" +
-                "`id` INT NOT NULL AUTO_INCREMENT," +
-                "`name` VARCHAR(16) NOT NULL," +
-                "PRIMARY KEY (`id`,`name`));").execute();
+        this.statementOf(this.schema.getSql("teams.create-table")).execute();
         return this;
     }
 
@@ -57,7 +59,14 @@ public class SqlTeamsSubloader extends LazySQLSubloader implements TeamsSubloade
             statement.executeUpdate();
             ResultSet resultSet = statement.getGeneratedKeys();
             if (resultSet.next()) {
-                team.setId(resultSet.getInt("id"));
+                if (this.schema.getType() == LazySchema.Type.SQL) {
+                    team.setId(resultSet.getInt("id"));
+                } else {
+                    ResultSet keysResult = this.statementOf("SELECT last_insert_rowid()").executeQuery();
+                    if (keysResult.next()) {
+                        team.setId(resultSet.getInt(1));
+                    }
+                }
             }
             leader.setTeam(team, TeamRole.LEADER);
             this.parent.getCache().add(team);
@@ -68,7 +77,7 @@ public class SqlTeamsSubloader extends LazySQLSubloader implements TeamsSubloade
     }
 
     @Override
-    public @NonNull Optional<SqlTeam>  getTeam(int id) {
+    public @NonNull Optional<SqlTeam> getTeam(int id) {
         return Optional.ofNullable(this.parent.getCache().get(SqlTeam.class, team -> team.getId() == id).orElseGet(() -> {
             try {
                 ResultSet resultSet = this.formatStatement("SELECT * FROM `teams` WHERE `id`={0} LIMIT 1;", id).executeQuery();
@@ -86,10 +95,17 @@ public class SqlTeamsSubloader extends LazySQLSubloader implements TeamsSubloade
 
     public static class Builder implements LazySQLSubloaderBuilder {
 
+        @NonNull
+        private final LazySchema schema;
+
+        public Builder(@NonNull LazySchema schema) {
+            this.schema = schema;
+        }
+
         @Override
         @NonNull
         public SqlTeamsSubloader build(@NonNull LazySQL parent) {
-            return new SqlTeamsSubloader(parent);
+            return new SqlTeamsSubloader(parent, this.schema);
         }
     }
 }
