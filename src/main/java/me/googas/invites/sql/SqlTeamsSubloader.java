@@ -47,8 +47,7 @@ public class SqlTeamsSubloader extends LazySQLSubloader implements TeamsSubloade
 
     public boolean rename(@NonNull SqlTeam team, @NonNull String name) {
         try {
-            PreparedStatement statement = this.formatStatement("UPDATE `teams` SET `name`='{0}' WHERE `id`={1};", name, team.getId());
-            return statement.executeUpdate() > 0;
+            return this.formatStatement("UPDATE `teams` SET `name`='{0}' WHERE `id`={1};", name, team.getId()).executeUpdate() > 0;
         } catch (SQLException e) {
             Invites.handle(e, () -> "Could not update name for team " + team);
         }
@@ -67,18 +66,8 @@ public class SqlTeamsSubloader extends LazySQLSubloader implements TeamsSubloade
             SqlTeam team = new SqlTeam(0, name);
             PreparedStatement statement = this.statementOf("INSERT INTO `teams` (`name`) VALUES('{0}');", Statement.RETURN_GENERATED_KEYS, name);
             statement.executeUpdate();
-            ResultSet resultSet = statement.getGeneratedKeys();
-            if (resultSet.next()) {
-                if (this.schema.getType() == LazySchema.Type.SQL) {
-                    team.setId(resultSet.getInt("id"));
-                } else {
-                    ResultSet keysResult = this.statementOf("SELECT last_insert_rowid()").executeQuery();
-                    if (keysResult.next()) {
-                        team.setId(resultSet.getInt(1));
-                    }
-                }
-            }
             leader.setTeam(team, TeamRole.LEADER);
+            this.schema.updateId(this, statement, team);
             this.parent.getCache().add(team);
             return team;
         } catch (SQLException e) {

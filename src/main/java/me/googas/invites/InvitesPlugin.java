@@ -63,10 +63,9 @@ public class InvitesPlugin extends JavaPlugin {
         TeamCommand teamCommand = new TeamCommand(this.commandManager);
         Collection<AnnotatedCommand> invitations = this.commandManager.parseCommands(new InvitationsCommand());
         Collection<AnnotatedCommand> subcommands = this.commandManager.parseCommands(new TeamCommand.SubCommands());
-        subcommands.forEach(teamCommand::addChildren);
         invitations.forEach(teamCommand::addChildren);
+        subcommands.forEach(teamCommand::addChildren);
         this.commandManager.registerAll(invitations);
-        this.commandManager.registerAll(subcommands);
         this.commandManager.registerAll(teamCommand);
         this.commandManager.getProvidersRegistry().addProviders(new TeamMemberProvider(), new TeamProvider());
         super.onEnable();
