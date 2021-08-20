@@ -13,6 +13,8 @@ import me.googas.starbox.time.Time;
 import me.googas.starbox.time.unit.Unit;
 import org.bukkit.OfflinePlayer;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 public class SqlTeam implements Team, SQLElement {
@@ -25,6 +27,10 @@ public class SqlTeam implements Team, SQLElement {
     public SqlTeam(int id, @NonNull String name) {
         this.id = id;
         this.name = name;
+    }
+
+    public static SqlTeam of(@NonNull ResultSet resultSet) throws SQLException {
+        return new SqlTeam(resultSet.getInt("id"), resultSet.getString("name"));
     }
 
     @Override

@@ -33,34 +33,12 @@ public class SqlMembersSubloader extends LazySQLSubloader implements MembersSubl
         super(parent);
     }
 
-    @NonNull
-    public SqlTeamMember getMember(@NonNull OfflinePlayer player) {
-        SqlTeamMember sqlMember = this.parent.getCache().get(SqlTeamMember.class, catchable -> catchable.getUniqueId().equals(player.getUniqueId()), true).orElseGet(() -> {
-            SqlTeamMember member = null;
-            try {
-                PreparedStatement statement = this.formatStatement("SELECT * FROM `members` WHERE `uuid`='{0}' LIMIT 1;", player.getUniqueId());
-                ResultSet resultSet = statement.executeQuery();
-                if (resultSet.next()) {
-                    member = this.memberOf(resultSet);
-                } else {
-                    member = new SqlTeamMember(player.getUniqueId(), 0, null);
-                    this.formatStatement("INSERT INTO `members`(`uuid`) VALUES('{0}');", player.getUniqueId()).execute();
-                }
-                this.parent.getCache().add(member);
-            } catch (SQLException e) {
-                Invites.handle(e, () -> "There's been an error while trying to get a member for: " + player.getUniqueId());
-            }
-            return member;
-        });
-        return Objects.requireNonNull(sqlMember, "There seems to been an error while trying to get a member for: " + player.getUniqueId());
-    }
-
     public @NonNull List<SqlTeamMember> getMembers(@NonNull Team team) {
         try {
             List<SqlTeamMember> loaded = new ArrayList<>();
             ResultSet resultSet = this.formatStatement("SELECT * FROM `members` WHERE `team`={0};", team.getId()).executeQuery();
             while (resultSet.next()) {
-                loaded.add(this.memberOf(resultSet));
+                loaded.add(SqlTeamMember.of(resultSet));
             }
             Set<UUID> matched = new HashSet<>();
             loaded.removeIf(member -> {
@@ -80,8 +58,25 @@ public class SqlMembersSubloader extends LazySQLSubloader implements MembersSubl
     }
 
     @NonNull
-    private SqlTeamMember memberOf(@NonNull ResultSet resultSet) throws SQLException {
-        return new SqlTeamMember(UUID.fromString(resultSet.getString("uuid")), resultSet.getInt("team"), TeamRole.valueOf(resultSet.getString("role")));
+    public SqlTeamMember getMember(@NonNull OfflinePlayer player) {
+        SqlTeamMember sqlMember = this.parent.getCache().get(SqlTeamMember.class, catchable -> catchable.getUniqueId().equals(player.getUniqueId()), true).orElseGet(() -> {
+            SqlTeamMember member = null;
+            try {
+                PreparedStatement statement = this.formatStatement("SELECT * FROM `members` WHERE `uuid`='{0}' LIMIT 1;", player.getUniqueId());
+                ResultSet resultSet = statement.executeQuery();
+                if (resultSet.next()) {
+                    member = SqlTeamMember.of(resultSet);
+                } else {
+                    member = new SqlTeamMember(player.getUniqueId(), 0, null);
+                    this.formatStatement("INSERT INTO `members`(`uuid`) VALUES('{0}');", player.getUniqueId()).execute();
+                }
+                this.parent.getCache().add(member);
+            } catch (SQLException e) {
+                Invites.handle(e, () -> "There's been an error while trying to get a member for: " + player.getUniqueId());
+            }
+            return member;
+        });
+        return Objects.requireNonNull(sqlMember, "There seems to been an error while trying to get a member for: " + player.getUniqueId());
     }
 
     public boolean setTeam(@NonNull SqlTeamMember member, Team team, TeamRole role) {

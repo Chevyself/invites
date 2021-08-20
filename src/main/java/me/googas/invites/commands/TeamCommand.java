@@ -51,8 +51,12 @@ public class TeamCommand extends StarboxBukkitCommand {
             if (member.getTeam().isPresent()) {
                 return new Result("&cYou already have a team");
             } else {
-                Team team = subloader.createTeam(name, member);
-                return new Result("&7Your team: &6{0} &7has been created", team.getName());
+                if (subloader.getTeam(name).isPresent()) {
+                    return new Result("&cThere's already a team by the name " + name);
+                } else {
+                    Team team = subloader.createTeam(name, member);
+                    return new Result("&7Your team: &6{0} &7has been created", team.getName());
+                }
             }
         }
 

@@ -82,12 +82,29 @@ public class SqlTeamsSubloader extends LazySQLSubloader implements TeamsSubloade
             try {
                 ResultSet resultSet = this.formatStatement("SELECT * FROM `teams` WHERE `id`={0} LIMIT 1;", id).executeQuery();
                 if (resultSet.next()) {
-                    SqlTeam team = new SqlTeam(resultSet.getInt("id"), resultSet.getString("name"));
+                    SqlTeam team = SqlTeam.of(resultSet);
                     this.parent.getCache().add(team);
                     return team;
                 }
             } catch (SQLException e) {
                 Invites.handle(e, () -> "Could not get team for: " + id);
+            }
+            return null;
+        }));
+    }
+
+    @Override
+    public @NonNull Optional<SqlTeam> getTeam(@NonNull String name) {
+        return Optional.ofNullable(this.parent.getCache().get(SqlTeam.class, team -> team.getName().equalsIgnoreCase(name)).orElseGet(() -> {
+            try {
+                ResultSet resultSet = this.formatStatement("SELECT DISTINCT * FROM `teams` WHERE LOWER(`name`) LIKE LOWER('{0}' LIMIT 1);", name).executeQuery();
+                if (resultSet.next()) {
+                    SqlTeam team = SqlTeam.of(resultSet);
+                    this.parent.getCache().add(team);
+                    return team;
+                }
+            } catch (SQLException e) {
+                Invites.handle(e, () -> "Could not get team by the name: " + name);
             }
             return null;
         }));

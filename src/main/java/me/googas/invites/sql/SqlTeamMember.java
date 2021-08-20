@@ -11,6 +11,8 @@ import me.googas.lazy.sql.SQLElement;
 import me.googas.starbox.time.Time;
 import me.googas.starbox.time.unit.Unit;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.StringJoiner;
@@ -48,6 +50,11 @@ public class SqlTeamMember implements TeamMember {
         return false;
     }
 
+    @NonNull
+    public static SqlTeamMember of(@NonNull ResultSet resultSet) throws SQLException {
+        return new SqlTeamMember(UUID.fromString(resultSet.getString("uuid")), resultSet.getInt("team"), TeamRole.valueOf(resultSet.getString("role")));
+    }
+
     @Override
     public @NonNull Optional<SqlTeam> getTeam() {
         return Invites.getLoader().getSubloader(SqlTeamsSubloader.class).getTeam(this.teamId);
@@ -55,7 +62,7 @@ public class SqlTeamMember implements TeamMember {
 
     @Override
     public @NonNull Optional<TeamRole> getRole() {
-        return Optional.ofNullable(role);
+        return Optional.ofNullable(this.role);
     }
 
     @Override

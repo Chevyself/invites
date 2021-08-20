@@ -14,4 +14,7 @@ public interface TeamsSubloader extends Subloader {
 
     @NonNull
     Optional<? extends Team> getTeam(int id);
+
+    @NonNull
+    Optional<? extends Team> getTeam(@NonNull String name);
 }
