@@ -72,7 +72,7 @@
         <dependency>
             <groupId>me.googas.starbox</groupId>
             <artifactId>bukkit</artifactId>
-            <version>171b29f549</version>
+            <version>54184e3bfc</version>
         </dependency>
         <dependency>
             <groupId>org.spigotmc</groupId>

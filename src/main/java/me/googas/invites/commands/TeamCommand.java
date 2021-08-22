@@ -2,7 +2,6 @@ package me.googas.invites.commands;
 
 import lombok.Getter;
 import lombok.NonNull;
-import me.googas.commands.annotations.Free;
 import me.googas.commands.annotations.Multiple;
 import me.googas.commands.annotations.Required;
 import me.googas.commands.bukkit.CommandManager;
@@ -11,17 +10,13 @@ import me.googas.commands.bukkit.annotations.Command;
 import me.googas.commands.bukkit.context.CommandContext;
 import me.googas.commands.bukkit.result.Result;
 import me.googas.invites.Invites;
-import me.googas.invites.MembersSubloader;
 import me.googas.invites.Team;
 import me.googas.invites.TeamException;
 import me.googas.invites.TeamMember;
 import me.googas.invites.TeamRole;
 import me.googas.invites.TeamsSubloader;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -83,9 +78,7 @@ public class TeamCommand extends StarboxBukkitCommand {
         public Result list(Team team) {
             // TODO make it more beautiful
             StringBuilder builder = new StringBuilder();
-            team.getMembers().forEach(member -> {
-                builder.append("- ").append(member.getUniqueId()).append(" role: ").append(member.getRole().orElse(TeamRole.NORMAL));
-            });
+            team.getMembers().forEach(member -> builder.append("- ").append(member.getUniqueId()).append(" role: ").append(member.getRole().orElse(TeamRole.NORMAL)));
             return new Result(builder.toString());
         }
 

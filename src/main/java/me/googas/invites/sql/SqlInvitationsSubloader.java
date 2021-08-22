@@ -7,7 +7,6 @@ import me.googas.invites.Invites;
 import me.googas.invites.TeamException;
 import me.googas.invites.TeamInvitation;
 import me.googas.invites.TeamMember;
-import me.googas.invites.TeamRole;
 import me.googas.lazy.sql.LazySQL;
 import me.googas.lazy.sql.LazySQLSubloader;
 

@@ -2,12 +2,10 @@ package me.googas.invites.sql;
 
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import me.googas.invites.Invites;
 import me.googas.invites.TeamRole;
 import me.googas.invites.Team;
 import me.googas.invites.TeamMember;
-import me.googas.lazy.sql.SQLElement;
 import me.googas.starbox.time.Time;
 import me.googas.starbox.time.unit.Unit;
 

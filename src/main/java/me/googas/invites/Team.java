@@ -2,7 +2,6 @@ package me.googas.invites;
 
 import lombok.NonNull;
 import me.googas.net.cache.Catchable;
-import org.bukkit.OfflinePlayer;
 
 import java.util.Collection;
 

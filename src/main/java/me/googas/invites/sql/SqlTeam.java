@@ -4,14 +4,10 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import me.googas.invites.Invites;
-import me.googas.invites.TeamRole;
 import me.googas.invites.Team;
-import me.googas.invites.TeamMember;
-import me.googas.lazy.Loader;
 import me.googas.lazy.sql.SQLElement;
 import me.googas.starbox.time.Time;
 import me.googas.starbox.time.unit.Unit;
-import org.bukkit.OfflinePlayer;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -41,7 +37,7 @@ public class SqlTeam implements Team, SQLElement {
     @Override
     public boolean disband() {
         if (Invites.getLoader().getSubloader(SqlTeamsSubloader.class).disband(this)) {
-            this.getMembers().forEach(member -> member.leaveTeam());
+            this.getMembers().forEach(SqlTeamMember::leaveTeam);
             return true;
         }
         return false;

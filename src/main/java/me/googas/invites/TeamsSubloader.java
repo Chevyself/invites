@@ -2,8 +2,6 @@ package me.googas.invites;
 
 import lombok.NonNull;
 import me.googas.lazy.Subloader;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 
 import java.util.Optional;
 

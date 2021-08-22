@@ -1,7 +1,6 @@
 package me.googas.invites;
 
 import lombok.NonNull;
-import me.googas.invites.sql.SqlTeam;
 import me.googas.net.cache.Catchable;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
