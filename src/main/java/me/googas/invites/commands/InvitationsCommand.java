@@ -3,6 +3,7 @@ package me.googas.invites.commands;
 import me.googas.commands.annotations.Required;
 import me.googas.commands.bukkit.annotations.Command;
 import me.googas.commands.bukkit.result.Result;
+import me.googas.invites.InvitationStatus;
 import me.googas.invites.InvitationsSubloader;
 import me.googas.invites.Invites;
 import me.googas.invites.Team;
@@ -38,12 +39,14 @@ public class InvitationsCommand {
 
     @Command(aliases = "invite", description = "Invite a new member to your team", permission = "invites.invite")
     public Result invite(TeamMember leader, @Required(name = "member", description = "The member to invite") TeamMember member) {
+        InvitationsSubloader invitations = Invites.getLoader().getSubloader(InvitationsSubloader.class);
         Optional<? extends Team> team = leader.getTeam();
         Optional<TeamRole> role = leader.getRole();
         Optional<? extends Team> memberTeam = member.getTeam();
-        if (team.isPresent() && (!memberTeam.isPresent() || !team.get().equals(memberTeam.get())) && (role.isPresent() && (role.get() == TeamRole.LEADER || role.get() == TeamRole.SUBLEADER))) {
+        Optional<? extends TeamInvitation> invitation = invitations.getInvitation(member, leader, InvitationStatus.WAITING);
+        if (team.isPresent() && !invitation.isPresent() && (!memberTeam.isPresent() || !team.get().equals(memberTeam.get())) && (role.isPresent() && (role.get() == TeamRole.LEADER || role.get() == TeamRole.SUBLEADER))) {
             try {
-                Invites.getLoader().getSubloader(InvitationsSubloader.class).createInvitation(leader, member);
+                invitations.createInvitation(leader, member);
                 member.localized("invitations.invite.received", MapBuilder.of("team", team.get().getName()).put("member", leader.getName()).build());
                 return BukkitLine.localized(leader, "invitations.invite.sent").format(member.getName()).asResult();
             } catch (TeamException e) {
@@ -54,6 +57,8 @@ public class InvitationsCommand {
             return BukkitLine.localized(leader, "invitations.invite.not-leader").asResult();
         } else if (team.isPresent() && memberTeam.isPresent() && team.get().equals(memberTeam.get())) {
             return BukkitLine.localized(leader, "invitations.invite.same-team").asResult();
+        } else if (invitation.isPresent()) {
+            return BukkitLine.localized(leader, "invitations.invite.already").format(member.getName()).asResult();
         }  else {
             return BukkitLine.localized(leader, "invitations.invite.no-team").asResult();
         }

@@ -145,6 +145,7 @@ invitations:
     not-leader: "&e&o⚠&c&o You are not the leader of your team"
     same-team: "&e&o⚠&c&o You are in the same team"
     no-team: "&e&o⚠&c&o You don't have a team"
+    already: "&e&o⚠&c&o You already sent an invitation to &4&o{0}"
   create:
     already: "&e&o⚠&c&o You already have a team"
     already-name: "&e&o⚠&c&o There's already a team by the name &4{0}"
@@ -155,3 +156,6 @@ invitations:
   disband:
     done: "&2Your team has been disbanded"
     no-team: "&e&o⚠&c&o Your team could not be disbanded"
+  kick:
+    kicked: "&a{0}&2 has been kicked"
+    not: "&e&o⚠&c&o Could not kick &4&o{0}&c&o from your team"
