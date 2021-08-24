@@ -74,6 +74,23 @@ public class TeamsCommand {
         }
     }
 
+    @Command(aliases = "leave", description = "Leave your team", permission = "invites.teams.leave", async = true)
+    public Result leave(TeamMember member) {
+        if (member.getTeam().isPresent()) {
+            if (member.getRole().isPresent() && member.getRole().get() != TeamRole.LEADER) {
+                if (member.leaveTeam()) {
+                    return BukkitLine.localized(member, "invitations.leave.left").asResult();
+                } else {
+                    return BukkitLine.localized(member, "invitations.leave.not").asResult();
+                }
+            } else {
+                return BukkitLine.localized(member, "invitations.leave.leader").asResult();
+            }
+        } else {
+            return BukkitLine.localized(member, "invitations.invite.no-team").asResult();
+        }
+    }
+
     @Command(aliases = "rename", description = "Rename your team", permission = "invites.teams.rename", async = true)
     public Result rename(TeamMember member, @Multiple @Required(name = "name", description = "The new name of the team") String name) {
         Optional<? extends Team> team = member.getTeam();

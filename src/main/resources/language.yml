@@ -160,3 +160,7 @@ invitations:
     kicked: "&a{0}&2 has been kicked"
     not: "&e&o⚠&c&o Could not kick &4&o{0}&c&o from your team"
     not-same: "&e&o⚠&c&o Your team could not in the same team"
+  leave:
+    left: "&2You have left your team"
+    not: "&e&o⚠&c&o You could not leave your team"
+    leader: "&e&o⚠&c&o You are the leader of your team"
