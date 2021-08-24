@@ -14,6 +14,8 @@ public interface TeamMember extends Catchable, Channel {
 
     boolean setTeam(@NonNull Team team, @NonNull TeamRole role);
 
+    boolean leaveTeam();
+
     @NonNull
     default OfflinePlayer getOffline() {
         return Bukkit.getOfflinePlayer(this.getUniqueId());

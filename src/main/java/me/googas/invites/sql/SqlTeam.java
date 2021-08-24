@@ -16,6 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class SqlTeam implements Team, SQLElement {
@@ -39,9 +40,17 @@ public class SqlTeam implements Team, SQLElement {
         return Time.of(5, Unit.MINUTES);
     }
 
+    private boolean kickAll() {
+        AtomicBoolean success = new AtomicBoolean();
+        this.getMembers().forEach(member -> {
+            if (!member.leaveTeam()) success.set(false);
+        });
+        return true;
+    }
+
     @Override
     public boolean disband() {
-        if (Invites.getLoader().getSubloader(InvitationsSubloader.class).cancelAll(this) && Invites.getLoader().getSubloader(SqlTeamsSubloader.class).disband(this)) {
+        if (Invites.getLoader().getSubloader(InvitationsSubloader.class).cancelAll(this) && this.kickAll() && Invites.getLoader().getSubloader(SqlTeamsSubloader.class).disband(this)) {
             this.getMembers().forEach(SqlTeamMember::leaveTeam);
             return true;
         }

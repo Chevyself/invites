@@ -51,6 +51,29 @@ public class TeamsCommand {
         }
     }
 
+    @Command(aliases = "kick", description = "Kick a player from your team", permission = "invites.teams.kick", async = true)
+    public Result kick(TeamMember leader, @Required(name = "member", description = "The member to kick") TeamMember member) {
+        Optional<? extends Team> optionalTeam = leader.getTeam();
+        Optional<? extends Team> memberTeam = member.getTeam();
+        if (optionalTeam.isPresent() && leader.getRole().isPresent() && (optionalTeam.get().equals(memberTeam.orElse(null)))) {
+            TeamRole role = leader.getRole().get();
+            // TODO allow subleaders to kick this should be implemented when promote is also included
+            if (role == TeamRole.LEADER) {
+                if (member.leaveTeam()) {
+                    return BukkitLine.localized(member, "invitations.kick.kicked").format(member.getName()).asResult();
+                } else {
+                    return BukkitLine.localized(member, "invitations.kick.not").format(member.getName()).asResult();
+                }
+            } else {
+                return BukkitLine.localized(member, "invitations.invite.not-leader").asResult();
+            }
+        } else if (optionalTeam.isPresent() && !optionalTeam.get().equals(memberTeam.orElse(null))) {
+            return BukkitLine.localized(member, "invitations.kick.not-same").asResult();
+        } else {
+            return BukkitLine.localized(member, "invitations.invite.no-team").asResult();
+        }
+    }
+
     @Command(aliases = "rename", description = "Rename your team", permission = "invites.teams.rename", async = true)
     public Result rename(TeamMember member, @Multiple @Required(name = "name", description = "The new name of the team") String name) {
         Optional<? extends Team> team = member.getTeam();
@@ -95,7 +118,7 @@ public class TeamsCommand {
 
 
         public Parent(@NonNull CommandManager manager) {
-            super("teams", "Opens a UI to view and manage teams", "<teams>", Arrays.asList("teams", "t"), false, manager);
+            super("teams", "Opens a UI to view and manage teams", "<teams>", Arrays.asList("team", "t"), false, manager);
         }
 
         @Override

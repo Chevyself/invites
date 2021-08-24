@@ -159,3 +159,4 @@ invitations:
   kick:
     kicked: "&a{0}&2 has been kicked"
     not: "&e&o⚠&c&o Could not kick &4&o{0}&c&o from your team"
+    not-same: "&e&o⚠&c&o Your team could not in the same team"
