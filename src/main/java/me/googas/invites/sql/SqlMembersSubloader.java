@@ -4,6 +4,7 @@ import lombok.NonNull;
 import me.googas.invites.Invites;
 import me.googas.invites.MembersSubloader;
 import me.googas.invites.Team;
+import me.googas.invites.TeamMember;
 import me.googas.invites.TeamRole;
 import me.googas.lazy.sql.LazySQL;
 import me.googas.lazy.sql.LazySQLSubloader;
@@ -34,22 +35,7 @@ public class SqlMembersSubloader extends LazySQLSubloader implements MembersSubl
 
     public @NonNull List<SqlTeamMember> getMembers(@NonNull Team team) {
         try {
-            List<SqlTeamMember> loaded = new ArrayList<>();
-            ResultSet resultSet = this.formatStatement("SELECT * FROM `members` WHERE `team`={0};", team.getId()).executeQuery();
-            while (resultSet.next()) {
-                loaded.add(SqlTeamMember.of(resultSet));
-            }
-            Set<UUID> matched = new HashSet<>();
-            loaded.removeIf(member -> {
-                if (this.parent.getCache().contains(member)) {
-                    matched.add(member.getUniqueId());
-                    return true;
-                }
-                return false;
-            });
-            loaded.forEach(member -> this.parent.getCache().add(member));
-            loaded.addAll(this.parent.getCache().getMany(SqlTeamMember.class, member -> matched.contains(member.getUniqueId())));
-            return loaded;
+            return this.getMembers(this.formatStatement("SELECT * FROM `members` WHERE `team`={0};", team.getId()).executeQuery());
         } catch (SQLException e) {
             Invites.handle(e, () -> "There's been an error while trying to get a members for team: " + team.getId());
         }
@@ -76,6 +62,35 @@ public class SqlMembersSubloader extends LazySQLSubloader implements MembersSubl
             return member;
         });
         return Objects.requireNonNull(sqlMember, "There seems to been an error while trying to get a member for: " + player.getUniqueId());
+    }
+
+    @NonNull
+    private List<SqlTeamMember> getMembers(@NonNull ResultSet resultSet) throws SQLException {
+        List<SqlTeamMember> loaded = new ArrayList<>();
+        while (resultSet.next()) {
+            loaded.add(SqlTeamMember.of(resultSet));
+        }
+        Set<UUID> matched = new HashSet<>();
+        loaded.removeIf(member -> {
+            if (this.parent.getCache().contains(member)) {
+                matched.add(member.getUniqueId());
+                return true;
+            }
+            return false;
+        });
+        loaded.forEach(member -> this.parent.getCache().add(member));
+        loaded.addAll(this.parent.getCache().getMany(SqlTeamMember.class, member -> matched.contains(member.getUniqueId())));
+        return loaded;
+    }
+
+    @Override
+    public @NonNull List<SqlTeamMember> getLeaders() {
+        try {
+            return this.getMembers(this.formatStatement("SELECT * FROM `members` WHERE `role`='{0}';", TeamRole.LEADER).executeQuery());
+        } catch (SQLException e) {
+            Invites.handle(e, () -> "There's been an error while trying to get leaders");
+        }
+        return new ArrayList<>();
     }
 
     public boolean setTeam(@NonNull SqlTeamMember member, Team team, TeamRole role) {

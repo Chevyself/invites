@@ -66,8 +66,8 @@ public class SqlTeamsSubloader extends LazySQLSubloader implements TeamsSubloade
             SqlTeam team = new SqlTeam(0, name);
             PreparedStatement statement = this.statementOf("INSERT INTO `teams` (`name`) VALUES('{0}');", Statement.RETURN_GENERATED_KEYS, name);
             statement.executeUpdate();
-            leader.setTeam(team, TeamRole.LEADER);
             this.schema.updateId(this, statement, team);
+            leader.setTeam(team, TeamRole.LEADER);
             this.parent.getCache().add(team);
             return team;
         } catch (SQLException e) {
@@ -96,7 +96,7 @@ public class SqlTeamsSubloader extends LazySQLSubloader implements TeamsSubloade
     public @NonNull Optional<SqlTeam> getTeam(@NonNull String name) {
         return Optional.ofNullable(this.parent.getCache().get(SqlTeam.class, team -> team.getName().equalsIgnoreCase(name)).orElseGet(() -> {
             try {
-                ResultSet resultSet = this.formatStatement("SELECT DISTINCT * FROM `teams` WHERE LOWER(`name`) LIKE LOWER('{0}' LIMIT 1);", name).executeQuery();
+                ResultSet resultSet = this.formatStatement("SELECT DISTINCT * FROM `teams` WHERE LOWER(`name`) LIKE LOWER('{0}');", name).executeQuery();
                 if (resultSet.next()) {
                     SqlTeam team = SqlTeam.of(resultSet);
                     this.parent.getCache().add(team);

@@ -16,6 +16,10 @@ public class Invites {
         Invites.getLogger().log(Level.SEVERE, exception, supplier);
     }
 
+    public static void handle(@NonNull Exception exception) {
+        Invites.handle(exception, () -> "");
+    }
+
     public static void setPlugin(InvitesPlugin plugin) {
         if (plugin != null && Invites.plugin != null) throw new IllegalStateException("Plugin has been initialized already");
         Invites.plugin = plugin;

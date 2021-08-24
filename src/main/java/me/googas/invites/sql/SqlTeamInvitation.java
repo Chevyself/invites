@@ -7,6 +7,7 @@ import me.googas.invites.InvitationStatus;
 import me.googas.invites.Invites;
 import me.googas.invites.TeamInvitation;
 import me.googas.invites.TeamMember;
+import me.googas.invites.TeamRole;
 import me.googas.lazy.sql.SQLElement;
 import me.googas.net.cache.Catchable;
 import me.googas.starbox.time.Time;
@@ -48,7 +49,7 @@ public class SqlTeamInvitation implements TeamInvitation, SQLElement, Catchable 
     @Override
     public boolean accept() {
         InvitationStatus status = InvitationStatus.ACCEPTED;
-        if (Invites.getLoader().getSubloader(SqlInvitationsSubloader.class).updateStatus(this, status)) {
+        if (this.getInvited().setTeam(this.getLeader().getTeam().orElseThrow(NullPointerException::new), TeamRole.NORMAL) && Invites.getLoader().getSubloader(SqlInvitationsSubloader.class).updateStatus(this, status)) {
             this.status = status;
             return true;
         }

@@ -15,6 +15,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.util.List;
+import java.util.Optional;
 
 public class TeamInvitationProvider implements BukkitArgumentProvider<TeamInvitation> {
 
@@ -28,7 +29,12 @@ public class TeamInvitationProvider implements BukkitArgumentProvider<TeamInvita
         if (context.getSender() instanceof Player) {
             TeamMember invited = Invites.getLoader().getSubloader(MembersSubloader.class).getMember((OfflinePlayer) context.getSender());
             TeamMember leader = context.get(string, TeamMember.class, context);
-            Invites.getLoader().getSubloader(InvitationsSubloader.class).getInvitation(invited, leader, InvitationStatus.WAITING);
+            Optional<? extends TeamInvitation> optional = Invites.getLoader().getSubloader(InvitationsSubloader.class).getInvitation(invited, leader, InvitationStatus.WAITING);
+            if (optional.isPresent()) {
+                return optional.get();
+            } else {
+                throw new ArgumentProviderException("You dont have an invitation from " + string);
+            }
         }
         throw new ArgumentProviderException(context.getMessagesProvider().playersOnly(context));
     }

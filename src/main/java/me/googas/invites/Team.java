@@ -11,6 +11,9 @@ public interface Team extends Catchable {
 
     boolean rename(@NonNull String name);
 
+    @NonNull
+    Collection<? extends TeamMember> getMembers(@NonNull TeamRole... roles);
+
     int getId();
 
     @NonNull

@@ -4,11 +4,14 @@ import lombok.NonNull;
 import me.googas.invites.InvitationStatus;
 import me.googas.invites.InvitationsSubloader;
 import me.googas.invites.Invites;
+import me.googas.invites.Team;
 import me.googas.invites.TeamException;
 import me.googas.invites.TeamInvitation;
 import me.googas.invites.TeamMember;
+import me.googas.invites.TeamRole;
 import me.googas.lazy.sql.LazySQL;
 import me.googas.lazy.sql.LazySQLSubloader;
+import me.googas.lazy.sql.LazySQLSubloaderBuilder;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,6 +19,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SqlInvitationsSubloader extends LazySQLSubloader implements InvitationsSubloader {
 
@@ -52,7 +56,7 @@ public class SqlInvitationsSubloader extends LazySQLSubloader implements Invitat
     public Optional<SqlTeamInvitation> getInvitation(@NonNull TeamMember invited, @NonNull TeamMember leader, @NonNull InvitationStatus status) {
         return Optional.ofNullable(this.parent.getCache().get(SqlTeamInvitation.class, invitation -> invitation.getInvited().equals(invited) && invitation.getLeader().equals(leader) && invitation.getStatus().equals(status)).orElseGet(() -> {
             try {
-                ResultSet resultSet = this.formatStatement("SELECT * FROM `invitations` WHERE `invited`='{0}', `leader`='{1}', status='{2}';", invited.getUniqueId(), leader.getUniqueId(), status).executeQuery();
+                ResultSet resultSet = this.formatStatement("SELECT * FROM `invitations` WHERE `invited`='{0}' AND `leader`='{1}' AND `status`='{2}';", invited.getUniqueId(), leader.getUniqueId(), status).executeQuery();
                 if (resultSet.next()) {
                     SqlTeamInvitation invitation = SqlTeamInvitation.of(resultSet);
                     this.parent.getCache().add(invitation);
@@ -71,13 +75,48 @@ public class SqlInvitationsSubloader extends LazySQLSubloader implements Invitat
             UUID leaderUuid = leader.getUniqueId();
             UUID memberUuid = member.getUniqueId();
             SqlTeamInvitation invitation = new SqlTeamInvitation(0, leaderUuid, memberUuid, InvitationStatus.WAITING);
-            PreparedStatement statement = this.statementOf("INSERT INTO `invitations`(`invited`, `leader`, `status`) VALUES('{0}', '{1}', '{2}');", Statement.RETURN_GENERATED_KEYS, leaderUuid, memberUuid, InvitationStatus.WAITING);
+            PreparedStatement statement = this.statementOf("INSERT INTO `invitations`(`invited`, `leader`, `status`) VALUES('{0}', '{1}', '{2}');", Statement.RETURN_GENERATED_KEYS, memberUuid, leaderUuid, InvitationStatus.WAITING);
             statement.executeUpdate();
             this.schema.updateId(this, statement, invitation);
             this.parent.getCache().add(invitation);
             return invitation;
         } catch (SQLException e) {
             throw new TeamException("Invitation could not be created due to a SQLException", e);
+        }
+    }
+
+    @Override
+    public boolean cancelAll(@NonNull Team team) {
+        AtomicBoolean cancelled = new AtomicBoolean(true);
+        team.getMembers(TeamRole.LEADER, TeamRole.SUBLEADER).forEach(leader -> {
+            if (!this.cancelAll(leader)) cancelled.set(false);
+        });
+        return cancelled.get();
+    }
+
+    @Override
+    public boolean cancelAll(@NonNull TeamMember leader) {
+        try {
+            this.formatStatement("UPDATE `invitations` SET `status`='{0}' WHERE `leader`='{1}';", InvitationStatus.CANCELLED, leader.getUniqueId()).executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            Invites.handle(e, () -> "Could not cancel invitations for " + leader);
+            return false;
+        }
+    }
+
+    public static class Builder implements LazySQLSubloaderBuilder {
+
+        @NonNull
+        private final LazySchema schema;
+
+        public Builder(@NonNull LazySchema schema) {
+            this.schema = schema;
+        }
+
+        @Override
+        public SqlInvitationsSubloader build(@NonNull LazySQL parent) {
+            return new SqlInvitationsSubloader(parent, this.schema);
         }
     }
 }

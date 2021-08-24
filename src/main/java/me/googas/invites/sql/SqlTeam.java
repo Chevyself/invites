@@ -3,15 +3,20 @@ package me.googas.invites.sql;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import me.googas.invites.InvitationsSubloader;
 import me.googas.invites.Invites;
 import me.googas.invites.Team;
+import me.googas.invites.TeamMember;
+import me.googas.invites.TeamRole;
 import me.googas.lazy.sql.SQLElement;
 import me.googas.starbox.time.Time;
 import me.googas.starbox.time.unit.Unit;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SqlTeam implements Team, SQLElement {
 
@@ -36,7 +41,7 @@ public class SqlTeam implements Team, SQLElement {
 
     @Override
     public boolean disband() {
-        if (Invites.getLoader().getSubloader(SqlTeamsSubloader.class).disband(this)) {
+        if (Invites.getLoader().getSubloader(InvitationsSubloader.class).cancelAll(this) && Invites.getLoader().getSubloader(SqlTeamsSubloader.class).disband(this)) {
             this.getMembers().forEach(SqlTeamMember::leaveTeam);
             return true;
         }
@@ -50,6 +55,20 @@ public class SqlTeam implements Team, SQLElement {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public @NonNull Collection<SqlTeamMember> getMembers(@NonNull TeamRole... roles) {
+        return this.getMembers().stream().filter(member -> {
+            if (member.getRole().isPresent()) {
+                TeamRole role = member.getRole().get();
+                for (TeamRole teamRole : roles) {
+                    if (role == teamRole) return true;
+                }
+            }
+            return false;
+
+        }).collect(Collectors.toList());
     }
 
     @Override

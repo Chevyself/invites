@@ -4,19 +4,23 @@ import lombok.NonNull;
 import me.googas.commands.bukkit.context.CommandContext;
 import me.googas.commands.bukkit.providers.type.BukkitArgumentProvider;
 import me.googas.commands.bukkit.providers.type.BukkitExtraArgumentProvider;
+import me.googas.commands.bukkit.providers.type.BukkitMultiArgumentProvider;
 import me.googas.commands.exceptions.ArgumentProviderException;
 import me.googas.invites.Invites;
 import me.googas.invites.Team;
 import me.googas.invites.TeamMember;
 import me.googas.invites.TeamsSubloader;
+import me.googas.starbox.Strings;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class TeamProvider implements BukkitExtraArgumentProvider<Team>, BukkitArgumentProvider<Team> {
+public class TeamProvider implements BukkitExtraArgumentProvider<Team>, BukkitMultiArgumentProvider<Team> {
+
     @Override
-    public @NonNull Team fromString(@NonNull String string, @NonNull CommandContext context) throws ArgumentProviderException {
+    public @NonNull Team fromStrings(@NonNull String[] strings, @NonNull CommandContext context) throws ArgumentProviderException {
+        String string = Strings.fromArray(strings);
         Optional<? extends Team> optional = Invites.getLoader().getSubloader(TeamsSubloader.class).getTeam(string);
         if (optional.isPresent()) {
             return optional.get();
@@ -26,7 +30,7 @@ public class TeamProvider implements BukkitExtraArgumentProvider<Team>, BukkitAr
     }
 
     @Override
-    public @NonNull List<String> getSuggestions(@NonNull String s, CommandContext commandContext) {
+    public @NonNull List<String> getSuggestions(@NonNull CommandContext commandContext) {
         // TODO
         return new ArrayList<>();
     }

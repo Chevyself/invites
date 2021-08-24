@@ -6,6 +6,7 @@ import me.googas.invites.Invites;
 import me.googas.invites.TeamRole;
 import me.googas.invites.Team;
 import me.googas.invites.TeamMember;
+import me.googas.starbox.modules.channels.PlayerChannel;
 import me.googas.starbox.time.Time;
 import me.googas.starbox.time.unit.Unit;
 
@@ -16,15 +17,13 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.UUID;
 
-public class SqlTeamMember implements TeamMember {
+public class SqlTeamMember extends PlayerChannel implements TeamMember  {
 
-    @NonNull @Getter
-    private final UUID uniqueId;
     private int teamId;
     private TeamRole role;
 
     public SqlTeamMember(@NonNull UUID uniqueId, int teamId, TeamRole role) {
-        this.uniqueId = uniqueId;
+        super(uniqueId);
         this.teamId = teamId;
         this.role = role;
     }
@@ -50,7 +49,8 @@ public class SqlTeamMember implements TeamMember {
 
     @NonNull
     public static SqlTeamMember of(@NonNull ResultSet resultSet) throws SQLException {
-        return new SqlTeamMember(UUID.fromString(resultSet.getString("uuid")), resultSet.getInt("team"), TeamRole.valueOf(resultSet.getString("role")));
+        String role = resultSet.getString("role");
+        return new SqlTeamMember(UUID.fromString(resultSet.getString("uuid")), resultSet.getInt("team"), role == null ? null : TeamRole.valueOf(role));
     }
 
     @Override
@@ -66,7 +66,7 @@ public class SqlTeamMember implements TeamMember {
     @Override
     public String toString() {
         return new StringJoiner(", ", SqlTeamMember.class.getSimpleName() + "[", "]")
-                .add("uniqueId=" + this.uniqueId)
+                .add("uniqueId=" + this.getUniqueId())
                 .add("teamId=" + this.teamId)
                 .add("role=" + this.role)
                 .toString();
@@ -77,11 +77,11 @@ public class SqlTeamMember implements TeamMember {
         if (this == o) return true;
         if (!(o instanceof SqlTeamMember)) return false;
         SqlTeamMember that = (SqlTeamMember) o;
-        return this.uniqueId.equals(that.uniqueId);
+        return this.getUniqueId().equals(that.getUniqueId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.uniqueId);
+        return Objects.hash(this.getUniqueId());
     }
 }
