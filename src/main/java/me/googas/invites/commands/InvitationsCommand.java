@@ -11,6 +11,7 @@ import me.googas.invites.TeamInvitation;
 import me.googas.invites.TeamMember;
 import me.googas.invites.TeamRole;
 import me.googas.starbox.BukkitLine;
+import me.googas.starbox.builders.MapBuilder;
 
 import java.util.Optional;
 
@@ -43,7 +44,7 @@ public class InvitationsCommand {
         if (team.isPresent() && (!memberTeam.isPresent() || !team.get().equals(memberTeam.get())) && (role.isPresent() && (role.get() == TeamRole.LEADER || role.get() == TeamRole.SUBLEADER))) {
             try {
                 Invites.getLoader().getSubloader(InvitationsSubloader.class).createInvitation(leader, member);
-                member.localized("invitations.invite.received", leader.getName());
+                member.localized("invitations.invite.received", MapBuilder.of("team", team.get().getName()).put("member", leader.getName()).build());
                 return BukkitLine.localized(leader, "invitations.invite.sent").format(member.getName()).asResult();
             } catch (TeamException e) {
                 Invites.handle(e);

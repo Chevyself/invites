@@ -17,7 +17,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -94,6 +99,25 @@ public class SqlInvitationsSubloader extends LazySQLSubloader implements Invitat
         return cancelled.get();
     }
 
+    @NonNull
+    private Collection<SqlTeamInvitation> getInvitations(@NonNull ResultSet resultSet) throws SQLException {
+        List<SqlTeamInvitation> loaded = new ArrayList<>();
+        while (resultSet.next()) {
+            loaded.add(SqlTeamInvitation.of(resultSet));
+        }
+        Set<Integer> matched = new HashSet<>();
+        loaded.removeIf(invitation -> {
+            if (this.parent.getCache().contains(invitation)) {
+                matched.add(invitation.getId());
+                return true;
+            }
+            return false;
+        });
+        loaded.forEach(invitation -> this.parent.getCache().add(invitation));
+        loaded.addAll(this.parent.getCache().getMany(SqlTeamInvitation.class, invitation -> matched.contains(invitation.getId())));
+        return loaded;
+    }
+
     @Override
     public boolean cancelAll(@NonNull TeamMember leader) {
         try {
@@ -103,6 +127,16 @@ public class SqlInvitationsSubloader extends LazySQLSubloader implements Invitat
             Invites.handle(e, () -> "Could not cancel invitations for " + leader);
             return false;
         }
+    }
+
+    @Override
+    public @NonNull Collection<? extends TeamInvitation> getInvitations(@NonNull TeamMember member, @NonNull InvitationStatus status) {
+        try {
+            return this.getInvitations(this.formatStatement("SELECT * FROM `invitations` WHERE `invited`='{0}' AND `status`='{1}';", member.getUniqueId(), status).executeQuery());
+        } catch (SQLException e) {
+            Invites.handle(e, () -> "There's been an error while trying to get invitations for " + member);
+        }
+        return new ArrayList<>();
     }
 
     public static class Builder implements LazySQLSubloaderBuilder {

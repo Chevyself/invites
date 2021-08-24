@@ -11,6 +11,7 @@ import me.googas.invites.commands.TeamsCommand;
 import me.googas.invites.commands.providers.TeamInvitationProvider;
 import me.googas.invites.commands.providers.TeamMemberProvider;
 import me.googas.invites.commands.providers.TeamProvider;
+import me.googas.invites.modules.NotificationsModule;
 import me.googas.invites.sql.LazySchema;
 import me.googas.invites.sql.SqlInvitationsSubloader;
 import me.googas.invites.sql.SqlMembersSubloader;
@@ -20,6 +21,7 @@ import me.googas.lazy.Loader;
 import me.googas.lazy.sql.LazySQL;
 import me.googas.starbox.BukkitYamlLanguage;
 import me.googas.starbox.Starbox;
+import me.googas.starbox.modules.ModuleRegistry;
 import me.googas.starbox.modules.language.LanguageModule;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -30,6 +32,8 @@ import java.util.Optional;
 
 public class InvitesPlugin extends JavaPlugin {
 
+    @NonNull
+    private final ModuleRegistry registry = new ModuleRegistry(this);
     @NonNull
     private final MessagesProvider messagesProvider = new BukkitMessagesProvider();
     @NonNull
@@ -73,6 +77,7 @@ public class InvitesPlugin extends JavaPlugin {
         this.commandManager.registerAll(invitations).registerAll(parentTeams);
         this.commandManager.getProvidersRegistry().addProviders(new TeamInvitationProvider(), new TeamMemberProvider(), new TeamMemberProvider(), new TeamProvider());
         Starbox.getModules().require(LanguageModule.class).register(this, BukkitYamlLanguage.of(this, "language"));
+        this.registry.engage(new NotificationsModule());
         super.onEnable();
     }
 }
