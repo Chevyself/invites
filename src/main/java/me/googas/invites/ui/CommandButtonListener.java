@@ -5,6 +5,7 @@ import me.googas.starbox.modules.ui.ButtonListener;
 import org.bukkit.Bukkit;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
+@Deprecated
 public class CommandButtonListener implements ButtonListener {
 
     @NonNull

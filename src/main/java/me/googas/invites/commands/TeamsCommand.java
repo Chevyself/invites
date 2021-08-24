@@ -2,7 +2,6 @@ package me.googas.invites.commands;
 
 import lombok.NonNull;
 import me.googas.commands.annotations.Multiple;
-import me.googas.commands.annotations.Parent;
 import me.googas.commands.annotations.Required;
 import me.googas.commands.bukkit.CommandManager;
 import me.googas.commands.bukkit.annotations.Command;
@@ -24,7 +23,6 @@ import me.googas.starbox.modules.ui.types.CustomInventory;
 import me.googas.starbox.modules.ui.types.PaginatedInventory;
 import me.googas.starbox.utility.items.ItemBuilder;
 import me.googas.starbox.utility.items.meta.SkullMetaBuilder;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -127,7 +125,7 @@ public class TeamsCommand {
     public Result view(Player viewer, @Required(name = "team", description = "The team to view") @Multiple Team team) {
         // TODO send a list to console sender
         viewer.closeInventory();
-        viewer.openInventory(UI.team(viewer, team).getInventory());
+        viewer.openInventory(Factory.team(viewer, team).getInventory());
         return new Result();
     }
 
@@ -144,7 +142,7 @@ public class TeamsCommand {
             if (sender instanceof Player) {
                 Player player = (Player) sender;
                 player.closeInventory();
-                player.openInventory(UI.teams(player).getInventory());
+                player.openInventory(Factory.teams(player).getInventory());
                 return new Result();
             }
             return Result.of(context.getMessagesProvider().playersOnly(context));
@@ -156,12 +154,19 @@ public class TeamsCommand {
         }
     }
 
-    public static class UI {
+    public static class Factory {
+
+        @NonNull
+        public static ItemBuilder teamsItem() {
+            return new ItemBuilder(Material.PAPER).withMeta(meta -> {
+                meta.setName("&9&lTeams").setLore("&7View and manage teams");
+            });
+        }
 
         @NonNull
         public static PaginatedInventory teams(@NonNull Player viewer) {
             // Keep viewer for future
-            PaginatedInventory inventory = new PaginatedInventory(CustomInventory.EXTRA_LARGE, BukkitUtils.format("&9&lTeams &r&6%page%/&7%max%")).addDefaultToolbar();
+            PaginatedInventory inventory = new PaginatedInventory(CustomInventory.EXTRA_LARGE, BukkitUtils.format("&9&lTeams &r&9%page%&8/&7%max%")).addDefaultToolbar();
             List<? extends TeamMember> leaders = Invites.getLoader().getSubloader(MembersSubloader.class).getLeaders();
             if (leaders.isEmpty()) {
                 // TODO
@@ -169,7 +174,7 @@ public class TeamsCommand {
                 leaders.forEach(leader -> {
                     Team team = leader.getTeam().orElseThrow(NullPointerException::new);
                     inventory.add(
-                            Button.builder(UI.builder(leader.getOffline())
+                            Button.builder(Factory.builder(leader.getOffline())
                                     .withMeta(meta -> meta.setName(team.getName()))
                                     .setAmount(team.getMembers().size()))
                                     .listen(new CommandButtonListener("teams view " + team.getName()))
@@ -184,7 +189,7 @@ public class TeamsCommand {
             PaginatedInventory inventory = new PaginatedInventory(team.getName()).addDefaultToolbar();
             team.getMembers().forEach(member -> {
                 inventory.add(
-                        Button.builder(UI.builder(member.getOffline()).withMeta(meta -> {
+                        Button.builder(Factory.builder(member.getOffline()).withMeta(meta -> {
                             meta.setName("&6" + member.getName());
                             meta.setLore(BukkitUtils.format("&7Role &b{0}", member.getRole().orElse(TeamRole.NORMAL).toString().toLowerCase()));
                         })).build());

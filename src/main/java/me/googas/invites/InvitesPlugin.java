@@ -21,19 +21,24 @@ import me.googas.lazy.Loader;
 import me.googas.lazy.sql.LazySQL;
 import me.googas.starbox.BukkitYamlLanguage;
 import me.googas.starbox.Starbox;
+import me.googas.starbox.compatibilities.Compatibility;
+import me.googas.starbox.compatibilities.CompatibilityManager;
 import me.googas.starbox.modules.ModuleRegistry;
 import me.googas.starbox.modules.language.LanguageModule;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import me.googas.invites.modules.compatibilities.PGMCompatibility;
 
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 public class InvitesPlugin extends JavaPlugin {
 
     @NonNull
-    private final ModuleRegistry registry = new ModuleRegistry(this);
+    private final ModuleRegistry modules = new ModuleRegistry(this);
     @NonNull
     private final MessagesProvider messagesProvider = new BukkitMessagesProvider();
     @NonNull
@@ -69,6 +74,7 @@ public class InvitesPlugin extends JavaPlugin {
             Invites.handle(e, () -> "Could not connect to database");
             this.setEnabled(false);
         }
+
         TeamsCommand.Parent parentTeams = new TeamsCommand.Parent(this.commandManager);
         Collection<AnnotatedCommand> invitations = this.commandManager.parseCommands(new InvitationsCommand());
         Collection<AnnotatedCommand> subcommands = this.commandManager.parseCommands(new TeamsCommand());
@@ -76,8 +82,15 @@ public class InvitesPlugin extends JavaPlugin {
         subcommands.forEach(parentTeams::addChildren);
         this.commandManager.registerAll(invitations).registerAll(parentTeams);
         this.commandManager.getProvidersRegistry().addProviders(new TeamInvitationProvider(), new TeamMemberProvider(), new TeamMemberProvider(), new TeamProvider());
+
         Starbox.getModules().require(LanguageModule.class).register(this, BukkitYamlLanguage.of(this, "language"));
-        this.registry.engage(new NotificationsModule());
+        this.modules.engage(new NotificationsModule());
+
+        Set<Compatibility> set = new HashSet<>();
+        set.add(new PGMCompatibility());
+        new CompatibilityManager(set).check().getCompatibilities().stream().filter(Compatibility::isEnabled).forEach(compatibility -> {
+            this.modules.engage(compatibility.getModules(this));
+        });
         super.onEnable();
     }
 }

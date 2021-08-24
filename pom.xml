@@ -55,6 +55,10 @@
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
+        <repository>
+            <id>ashcon-repo</id>
+            <url>https://repo.ashcon.app/content/repositories/snapshots</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -72,12 +76,18 @@
         <dependency>
             <groupId>me.googas.starbox</groupId>
             <artifactId>bukkit</artifactId>
-            <version>b04a5e354c</version>
+            <version>8dfb8db93f</version>
         </dependency>
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
             <version>1.8.8-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>tc.oc.pgm</groupId>
+            <artifactId>core</artifactId>
+            <version>0.11-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
