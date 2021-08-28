@@ -36,13 +36,13 @@ public class LazySchema {
      public void updateId(@NonNull LazySQLSubloader subloader, @NonNull PreparedStatement statement, @NonNull SQLElement element) throws SQLException {
         ResultSet resultSet = statement.getGeneratedKeys();
         if (resultSet.next()) {
-            if (this.type == LazySchema.Type.SQL) {
-                element.setId(resultSet.getInt("id"));
-            } else {
+            if (this.type == LazySchema.Type.SQLITE) {
                 ResultSet keysResult = subloader.statementOf("SELECT last_insert_rowid()").executeQuery();
                 if (keysResult.next()) {
                     element.setId(resultSet.getInt(1));
                 }
+            } else {
+                element.setId(resultSet.getInt(1));
             }
         }
     }
@@ -59,6 +59,7 @@ public class LazySchema {
 
     public enum Type {
         SQLITE,
-        SQL
+        SQL,
+        H2
     }
 }

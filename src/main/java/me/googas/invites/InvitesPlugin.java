@@ -66,6 +66,7 @@ public class InvitesPlugin extends JavaPlugin {
                 builder = LazySQL.at(new StarboxFile(pluginFolder, "database"), "sqlite");
                 schema = LazySchema.of(loader, LazySchema.Type.SQLITE);
             } else {
+                Class.forName("com.mysql.cj.jdbc.Driver");
                 builder = LazySQL.at(config.getString("url"));
                 schema = LazySchema.of(loader, LazySchema.Type.SQL);
             }
@@ -86,9 +87,7 @@ public class InvitesPlugin extends JavaPlugin {
         Starbox.getModules().require(LanguageModule.class).register(this, BukkitYamlLanguage.of(this, "language"));
         this.modules.engage(new NotificationsModule());
 
-        Set<Compatibility> set = new HashSet<>();
-        set.add(new PGMCompatibility());
-        new CompatibilityManager(set).check().getCompatibilities().stream().filter(Compatibility::isEnabled).forEach(compatibility -> {
+        new CompatibilityManager().add(new PGMCompatibility()).check().getCompatibilities().stream().filter(Compatibility::isEnabled).forEach(compatibility -> {
             this.modules.engage(compatibility.getModules(this));
         });
         super.onEnable();

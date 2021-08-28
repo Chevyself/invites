@@ -119,7 +119,7 @@ public class SqlMembersSubloader extends LazySQLSubloader implements MembersSubl
         this.statementOf("CREATE TABLE IF NOT EXISTS `members` (" +
                 "`uuid` VARCHAR(36) NOT NULL," +
                 "`team` INT DEFAULT NULL," +
-                "`role` VARCHAR DEFAULT 'NORMAL'," +
+                "`role` VARCHAR(50) DEFAULT 'NORMAL'," +
                 "PRIMARY KEY (`uuid`));").execute();
         return this;
     }
