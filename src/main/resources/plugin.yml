@@ -5,3 +5,52 @@ api-version: 1.8
 main: me.googas.invites.InvitesPlugin
 depend:
   - Starbox
+permissions:
+  # Permissions for the '/team|team|t' command
+  invites.teams:
+    description: Allows to use the '/teams|team|t' command
+    default: true
+  invites.teams.create:
+    description: Allows to create teams
+  invites.teams.kick:
+    description: Allows to kick a member from your team
+  invites.teams.leave:
+    description: Allows to leave the team you are currently on
+  invites.teams.rename:
+    description: Allows to rename your team
+  invites.teams.disband:
+    description: Allows to disband your team
+  invites.teams.view:
+    description: Allows to view the members of any team
+    default: true
+  invites.teams.*:
+    description: Allows to use all the commands in '/teams|team|t'
+    default: op
+    children:
+      - invites.teams.create
+      - invites.teams.kick
+      - invites.teams.leave
+      - invites.teams.rename
+      - invites.teams.disband
+      - invites.teams.view
+      - invites.teams
+  # Permissions for invites commands
+  invites.accept:
+    description: Allows to accept an invitation
+  invites.deny:
+    description: Allows to deny an invitation
+  invites.invite:
+    description: Allows to invite a player to join your team
+  invites.*:
+    description: Have every permission of the plugin
+    children:
+      - invites.teams.create
+      - invites.teams.kick
+      - invites.teams.leave
+      - invites.teams.rename
+      - invites.teams.disband
+      - invites.teams.view
+      - invites.teams
+      - invites.accept
+      - invites.deny
+      - invites.invite
