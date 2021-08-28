@@ -68,7 +68,7 @@ public class InvitesPlugin extends JavaPlugin {
                 schema = LazySchema.of(loader, LazySchema.Type.SQLITE);
             } else {
                 Class.forName("com.mysql.cj.jdbc.Driver");
-                builder = LazySQL.at(config.getString("url"));
+                builder = LazySQL.at("jdbc:" + config.getString("url"));
                 schema = LazySchema.of(loader, LazySchema.Type.SQL);
             }
             this.loader = builder.add(new SqlInvitationsSubloader.Builder(schema), new SqlMembersSubloader.Builder(), new SqlTeamsSubloader.Builder(schema)).build().start();
