@@ -1,5 +1,7 @@
 package me.googas.invites;
 
+import java.util.Optional;
+import java.util.UUID;
 import lombok.NonNull;
 import me.googas.net.cache.Catchable;
 import me.googas.starbox.modules.channels.Channel;
@@ -7,37 +9,34 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-import java.util.Optional;
-import java.util.UUID;
-
 public interface TeamMember extends Catchable, Channel {
 
-    boolean setTeam(@NonNull Team team, @NonNull TeamRole role);
+  boolean setTeam(@NonNull Team team, @NonNull TeamRole role);
 
-    boolean leaveTeam();
+  boolean leaveTeam();
 
-    @NonNull
-    default OfflinePlayer getOffline() {
-        return Bukkit.getOfflinePlayer(this.getUniqueId());
-    }
+  @NonNull
+  default OfflinePlayer getOffline() {
+    return Bukkit.getOfflinePlayer(this.getUniqueId());
+  }
 
-    @NonNull
-    default Optional<Player> getPlayer() {
-        return Optional.ofNullable(Bukkit.getPlayer(this.getUniqueId()));
-    }
+  @NonNull
+  default Optional<Player> getPlayer() {
+    return Optional.ofNullable(Bukkit.getPlayer(this.getUniqueId()));
+  }
 
-    @NonNull
-    default String getName() {
-        String name = this.getOffline().getName();
-        return name == null ? this.getUniqueId().toString() : name;
-    }
+  @NonNull
+  default String getName() {
+    String name = this.getOffline().getName();
+    return name == null ? this.getUniqueId().toString() : name;
+  }
 
-    @NonNull
-    UUID getUniqueId();
+  @NonNull
+  UUID getUniqueId();
 
-    @NonNull
-    Optional<? extends Team> getTeam();
+  @NonNull
+  Optional<? extends Team> getTeam();
 
-    @NonNull
-    Optional<TeamRole> getRole();
+  @NonNull
+  Optional<TeamRole> getRole();
 }

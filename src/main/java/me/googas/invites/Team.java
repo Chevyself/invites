@@ -1,24 +1,23 @@
 package me.googas.invites;
 
+import java.util.Collection;
 import lombok.NonNull;
 import me.googas.net.cache.Catchable;
 
-import java.util.Collection;
-
 public interface Team extends Catchable {
 
-    boolean disband();
+  boolean disband();
 
-    boolean rename(@NonNull String name);
+  boolean rename(@NonNull String name);
 
-    @NonNull
-    Collection<? extends TeamMember> getMembers(@NonNull TeamRole... roles);
+  @NonNull
+  Collection<? extends TeamMember> getMembers(@NonNull TeamRole... roles);
 
-    int getId();
+  int getId();
 
-    @NonNull
-    String getName();
+  @NonNull
+  String getName();
 
-    @NonNull
-    Collection<? extends TeamMember> getMembers();
+  @NonNull
+  Collection<? extends TeamMember> getMembers();
 }

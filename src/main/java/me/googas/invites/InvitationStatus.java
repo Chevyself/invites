@@ -1,8 +1,8 @@
 package me.googas.invites;
 
 public enum InvitationStatus {
-    ACCEPTED,
-    DENIED,
-    WAITING,
-    CANCELLED
+  ACCEPTED,
+  DENIED,
+  WAITING,
+  CANCELLED
 }
