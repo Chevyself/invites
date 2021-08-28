@@ -16,7 +16,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class TeamProvider implements BukkitExtraArgumentProvider<Team>, BukkitMultiArgumentProvider<Team> {
+public class TeamProvider implements BukkitExtraArgumentProvider<Team>, BukkitMultiArgumentProvider<Team>, BukkitArgumentProvider<Team> {
+
+    @Override
+    public @NonNull Team fromString(@NonNull String string, @NonNull CommandContext context) throws ArgumentProviderException {
+        Optional<? extends Team> optional = Invites.getLoader().getSubloader(TeamsSubloader.class).getTeam(context.get(string, int.class, context));
+        if (optional.isPresent()) {
+            return optional.get();
+        }
+        throw new ArgumentProviderException("&c" + string + " does not match a team id");
+    }
+
+    @Override
+    public @NonNull List<String> getSuggestions(@NonNull String string, CommandContext context) {
+        // TODO
+        return new ArrayList<>();
+    }
 
     @Override
     public @NonNull Team fromStrings(@NonNull String[] strings, @NonNull CommandContext context) throws ArgumentProviderException {

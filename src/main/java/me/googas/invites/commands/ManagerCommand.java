@@ -24,9 +24,9 @@ public class ManagerCommand {
     @Command(aliases = "rename", description = "Rename a team", permission = "invites.manager.rename")
     public Result rename(Channel channel, @Required(name = "team", description = "The team to rename")Team team, @Required(name = "name", description = "The new name of the team") @Multiple String name) {
         if (team.rename(name)) {
-            return BukkitLine.localized(channel, "invites.manager.rename.renamed").format(MapBuilder.of("team", team.getName()).put("name", name).build()).asResult();
+            return BukkitLine.localized(channel, "invitations.manager.rename.renamed").format(MapBuilder.of("team", team.getName()).put("name", name).build()).asResult();
         } else {
-            return BukkitLine.localized(channel, "invites.manager.rename.not").format(MapBuilder.of("team", team.getName()).put("name", name).build()).asResult();
+            return BukkitLine.localized(channel, "invitations.manager.rename.not").format(MapBuilder.of("team", team.getName()).put("name", name).build()).asResult();
         }
     }
 
@@ -35,15 +35,15 @@ public class ManagerCommand {
         String name = player.getName();
         if (team == null) {
             if (player.leaveTeam()) {
-                return BukkitLine.localized(channel, "invites.manager.move.left.success").format(name).asResult();
+                return BukkitLine.localized(channel, "invitations.manager.move.left.success").format(name).asResult();
             } else {
-                return BukkitLine.localized(channel, "invites.manager.move.left.not").format(name).asResult();
+                return BukkitLine.localized(channel, "invitations.manager.move.left.not").format(name).asResult();
             }
         } else {
             if (player.setTeam(team, TeamRole.NORMAL)) {
-                return BukkitLine.localized(channel, "invites.manager.move.success").format(MapBuilder.of("team", team.getName()).put("member", name).build()).asResult();
+                return BukkitLine.localized(channel, "invitations.manager.move.success").format(MapBuilder.of("team", team.getName()).put("member", name).build()).asResult();
             } else {
-                return BukkitLine.localized(channel, "invites.manager.move.not").format(MapBuilder.of("team", team.getName()).put("member", name).build()).asResult();
+                return BukkitLine.localized(channel, "invitations.manager.move.not").format(MapBuilder.of("team", team.getName()).put("member", name).build()).asResult();
             }
         }
     }
