@@ -164,3 +164,13 @@ invitations:
     left: "&2You have left your team"
     not: "&e&o⚠&c&o You could not leave your team"
     leader: "&e&o⚠&c&o You are the leader of your team"
+  manager:
+    rename:
+      renamed: "&a%team%&2 has been renamed to &a%name%"
+      not: "&e&o⚠&c&o &4&o{0}%team% could not be renamed to &4&o{0}%name%"
+    move:
+      left:
+        success: "&a{0}&2 has been kicked from its team"
+        not: "&e&o⚠&4&o{0}&c&o could not be kicked from its team"
+      success: "&a%member%&2 has been moved to &a%team%"
+      not: "&e&o⚠&4&o%member%&c&o could not be moved to &4&o%team%"

@@ -43,6 +43,7 @@ permissions:
     description: Allows to invite a player to join your team
   invites.*:
     description: Have every permission of the plugin
+    default: op
     children:
       - invites.teams.create
       - invites.teams.kick

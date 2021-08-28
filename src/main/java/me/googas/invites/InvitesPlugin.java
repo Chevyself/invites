@@ -7,6 +7,7 @@ import me.googas.commands.bukkit.messages.BukkitMessagesProvider;
 import me.googas.commands.bukkit.messages.MessagesProvider;
 import me.googas.commands.bukkit.providers.registry.BukkitProvidersRegistry;
 import me.googas.invites.commands.InvitationsCommand;
+import me.googas.invites.commands.ManagerCommand;
 import me.googas.invites.commands.TeamsCommand;
 import me.googas.invites.commands.providers.TeamInvitationProvider;
 import me.googas.invites.commands.providers.TeamMemberProvider;
@@ -77,11 +78,14 @@ public class InvitesPlugin extends JavaPlugin {
         }
 
         TeamsCommand.Parent parentTeams = new TeamsCommand.Parent(this.commandManager);
+        ManagerCommand.Parent parentManager = new ManagerCommand.Parent(this.commandManager);
         Collection<AnnotatedCommand> invitations = this.commandManager.parseCommands(new InvitationsCommand());
         Collection<AnnotatedCommand> subcommands = this.commandManager.parseCommands(new TeamsCommand());
+        Collection<AnnotatedCommand> managerSubcommands = this.commandManager.parseCommands(new ManagerCommand());
         invitations.forEach(parentTeams::addChildren);
         subcommands.forEach(parentTeams::addChildren);
-        this.commandManager.registerAll(invitations).registerAll(parentTeams);
+        managerSubcommands.forEach(parentManager::addChildren);
+        this.commandManager.registerAll(invitations).registerAll(parentTeams, parentManager);
         this.commandManager.getProvidersRegistry().addProviders(new TeamInvitationProvider(), new TeamMemberProvider(), new TeamMemberProvider(), new TeamProvider());
 
         Starbox.getModules().require(LanguageModule.class).register(this, BukkitYamlLanguage.of(this, "language"));
