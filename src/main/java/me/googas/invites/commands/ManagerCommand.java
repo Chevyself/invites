@@ -73,7 +73,7 @@ public class ManagerCommand {
           "teamManager",
           "Allows to manage teams",
           "teamManager|tm <subcommand>",
-          Collections.singletonList("mt"),
+          Collections.singletonList("tm"),
           false,
           manager);
     }

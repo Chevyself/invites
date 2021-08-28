@@ -3,9 +3,29 @@ description: Invites and team creation for Events
 version: 1.0.0
 api-version: 1.8
 main: me.googas.invites.InvitesPlugin
-depend:
-  - Starbox
+depend: [Starbox]
 permissions:
+  # Permissions for invites commands
+  invites.accept:
+    description: Allows to accept an invitation
+  invites.deny:
+    description: Allows to deny an invitation
+  invites.invite:
+    description: Allows to invite a player to join your team
+  # Permissions for the manager
+  invites.manager.rename:
+    description: Allows to rename a team
+  invites.manager.move:
+    description: Allows to move a player to a team or kick it
+  invites.manager:
+    description: Allows to use the '/teamManager|tm' command
+  invites.manager.*:
+    description: Have all the manager permissions
+    default: op
+    children:
+      - invites.manager.rename
+      - invites.manager.move
+      - invites.manager
   # Permissions for the '/team|team|t' command
   invites.teams:
     description: Allows to use the '/teams|team|t' command
@@ -34,24 +54,13 @@ permissions:
       - invites.teams.disband
       - invites.teams.view
       - invites.teams
-  # Permissions for invites commands
-  invites.accept:
-    description: Allows to accept an invitation
-  invites.deny:
-    description: Allows to deny an invitation
-  invites.invite:
-    description: Allows to invite a player to join your team
+  # Allows every permission of the plugin
   invites.*:
     description: Have every permission of the plugin
     default: op
     children:
-      - invites.teams.create
-      - invites.teams.kick
-      - invites.teams.leave
-      - invites.teams.rename
-      - invites.teams.disband
-      - invites.teams.view
-      - invites.teams
       - invites.accept
       - invites.deny
       - invites.invite
+      - invite.manager.*
+      - invites.teams.*
