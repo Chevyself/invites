@@ -9,7 +9,5 @@ public class TeamException extends StarboxException {
     super(message, cause);
   }
 
-  public TeamException(@NonNull String message) {
-
-  }
+  public TeamException(@NonNull String message) {}
 }

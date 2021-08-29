@@ -18,7 +18,11 @@ import me.googas.starbox.modules.channels.Channel;
 
 public class ManagerCommand {
 
-  @Command(aliases = "rename", description = "Rename a team", permission = "invites.manager.rename", async = true)
+  @Command(
+      aliases = "rename",
+      description = "Rename a team",
+      permission = "invites.manager.rename",
+      async = true)
   public Result rename(
       Channel channel,
       @Required(name = "team", description = "The team to rename") Team team,
@@ -37,7 +41,8 @@ public class ManagerCommand {
   @Command(
       aliases = "move",
       description = "Move a player to a team",
-      permission = "invites.manager.move", async = true)
+      permission = "invites.manager.move",
+      async = true)
   public Result move(
       Channel channel,
       @Required(name = "player", description = "The player to move") TeamMember player,

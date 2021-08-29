@@ -26,7 +26,7 @@ public interface InvitesCancellable extends Cancellable {
    *
    * @return true if the match was not cancelled
    */
-  default boolean not() {
+  default boolean notCancelled() {
     return !this.get();
   }
 }

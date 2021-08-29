@@ -20,7 +20,8 @@ public class InvitationsCommand {
   @Command(
       aliases = "accept",
       description = "Accept an invitation to join a team",
-      permission = "invites.accept", async = true)
+      permission = "invites.accept",
+      async = true)
   public Result accept(
       @Required(name = "invitation", description = "The invitation to accept")
           TeamInvitation invitation) {
@@ -37,7 +38,8 @@ public class InvitationsCommand {
   @Command(
       aliases = "deny",
       description = "Deny an invitation to join a team",
-      permission = "invites.deny", async = true)
+      permission = "invites.deny",
+      async = true)
   public Result deny(
       @Required(name = "invitation", description = "The invitation to denny")
           TeamInvitation invitation) {
@@ -51,7 +53,8 @@ public class InvitationsCommand {
   @Command(
       aliases = "invite",
       description = "Invite a new member to your team",
-      permission = "invites.invite", async = true)
+      permission = "invites.invite",
+      async = true)
   public Result invite(
       TeamMember leader,
       @Required(name = "member", description = "The member to invite") TeamMember member) {

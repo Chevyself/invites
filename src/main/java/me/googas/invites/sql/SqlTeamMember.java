@@ -11,6 +11,7 @@ import me.googas.invites.Invites;
 import me.googas.invites.Team;
 import me.googas.invites.TeamMember;
 import me.googas.invites.TeamRole;
+import me.googas.invites.events.teams.AsyncSwitchTeamEvent;
 import me.googas.starbox.modules.channels.PlayerChannel;
 import me.googas.starbox.time.Time;
 import me.googas.starbox.time.unit.Unit;
@@ -46,7 +47,8 @@ public class SqlTeamMember extends PlayerChannel implements TeamMember {
 
   @Override
   public boolean setTeam(Team team, TeamRole role) {
-    if (Invites.getLoader().getSubloader(SqlMembersSubloader.class).setTeam(this, team, role)) {
+    if (new AsyncSwitchTeamEvent(this, team, role).notCancelled()
+        && Invites.getLoader().getSubloader(SqlMembersSubloader.class).setTeam(this, team, role)) {
       this.teamId = team == null ? -1 : team.getId();
       this.role = role;
       return true;

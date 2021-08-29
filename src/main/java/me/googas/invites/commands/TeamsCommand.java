@@ -51,8 +51,12 @@ public class TeamsCommand {
             .format(name)
             .asResult();
       } else {
-        Team team = subloader.createTeam(name, member);
-        return BukkitLine.localized(member, "invitations.create.created").format(name).asResult();
+        if (subloader.createTeam(name, member).isPresent()) {
+          return BukkitLine.localized(member, "invitations.create.created").format(name).asResult();
+        }
+        // If team is not present the event might have been cancelled and a message must've been
+        // sent
+        return new Result();
       }
     }
   }

@@ -63,10 +63,20 @@ public class InvitesPlugin extends JavaPlugin {
       LazySQL.LazySQLBuilder builder;
       if (url.equals("file")) {
         Class.forName("org.sqlite.JDBC");
-        builder = LazySQL.at(new StarboxFile(pluginFolder, "database"), new LazySchema(LazySchema.Type.SQLITE, PropertiesSchemaSupplier.of(loader.getResource("schemas/sqlite.properties"))));
+        builder =
+            LazySQL.at(
+                new StarboxFile(pluginFolder, "database"),
+                new LazySchema(
+                    LazySchema.Type.SQLITE,
+                    PropertiesSchemaSupplier.of(loader.getResource("schemas/sqlite.properties"))));
       } else {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        builder = LazySQL.at("jdbc:" + config.getString("url")).setSchema(new LazySchema(LazySchema.Type.SQL, PropertiesSchemaSupplier.of(loader.getResource("schemas/sql.properties"))));
+        builder =
+            LazySQL.at("jdbc:" + config.getString("url"))
+                .setSchema(
+                    new LazySchema(
+                        LazySchema.Type.SQL,
+                        PropertiesSchemaSupplier.of(loader.getResource("schemas/sql.properties"))));
       }
       this.loader =
           builder
