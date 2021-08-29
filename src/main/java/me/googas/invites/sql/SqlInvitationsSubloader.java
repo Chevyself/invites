@@ -1,21 +1,8 @@
 package me.googas.invites.sql;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.NonNull;
 import me.googas.invites.InvitationStatus;
 import me.googas.invites.InvitationsSubloader;
-import me.googas.invites.Invites;
 import me.googas.invites.Team;
 import me.googas.invites.TeamException;
 import me.googas.invites.TeamInvitation;
@@ -25,37 +12,40 @@ import me.googas.lazy.sql.LazySQL;
 import me.googas.lazy.sql.LazySQLSubloader;
 import me.googas.lazy.sql.LazySQLSubloaderBuilder;
 
-public class SqlInvitationsSubloader extends LazySQLSubloader implements InvitationsSubloader {
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-  @NonNull private final LazySchema schema;
+public class SqlInvitationsSubloader extends LazySQLSubloader implements InvitationsSubloader {
 
   /**
    * Start the subloader.
    *
    * @param parent the sql parent
-   * @param schema
    */
-  protected SqlInvitationsSubloader(@NonNull LazySQL parent, @NonNull LazySchema schema) {
+  protected SqlInvitationsSubloader(@NonNull LazySQL parent) {
     super(parent);
-    this.schema = schema;
   }
 
   public boolean updateStatus(
       @NonNull SqlTeamInvitation invitation, @NonNull InvitationStatus status) {
-    try {
-      return this.formatStatement(
-                  "UPDATE `invitations` SET `status`='{0}' WHERE `id`={1};",
-                  status, invitation.getId())
-              .executeUpdate()
-          > 0;
-    } catch (SQLException e) {
-      Invites.handle(e, () -> "Could not update status for invitation " + invitation);
-    }
-    return false;
+    return this.statement("UPDATE `invitations` SET `status`=? WHERE `id`=?;").execute(statement -> {
+      statement.setString(1, status.toString());
+      statement.setInt(2, invitation.getId());
+      return statement.executeUpdate() > 0;
+    }).orElse(false);
   }
 
   @NonNull
-  private Collection<SqlTeamInvitation> getInvitations(@NonNull ResultSet resultSet)
+  private List<SqlTeamInvitation> getInvitations(@NonNull ResultSet resultSet)
       throws SQLException {
     List<SqlTeamInvitation> loaded = new ArrayList<>();
     while (resultSet.next()) {
@@ -79,63 +69,55 @@ public class SqlInvitationsSubloader extends LazySQLSubloader implements Invitat
   }
 
   @Override
-  public @NonNull LazySQLSubloader createTable() throws SQLException {
-    this.statementOf(this.schema.getSql("invitations.create-table")).execute();
+  public @NonNull LazySQLSubloader createTable() {
+    this.statementWithKey("invitations.create-table").execute(PreparedStatement::execute);
     return this;
   }
 
   @Override
   public Optional<SqlTeamInvitation> getInvitation(
       @NonNull TeamMember invited, @NonNull TeamMember leader, @NonNull InvitationStatus status) {
-    return Optional.ofNullable(
-        this.parent
+    SqlTeamInvitation sqlTeamInvitation = this.parent
             .getCache()
             .get(
-                SqlTeamInvitation.class,
-                invitation ->
-                    invitation.getInvited().equals(invited)
-                        && invitation.getLeader().equals(leader)
-                        && invitation.getStatus().equals(status))
-            .orElseGet(
-                () -> {
-                  try {
-                    ResultSet resultSet =
-                        this.formatStatement(
-                                "SELECT * FROM `invitations` WHERE `invited`='{0}' AND `leader`='{1}' AND `status`='{2}';",
-                                invited.getUniqueId(), leader.getUniqueId(), status)
-                            .executeQuery();
-                    if (resultSet.next()) {
-                      SqlTeamInvitation invitation = SqlTeamInvitation.of(resultSet);
-                      this.parent.getCache().add(invitation);
-                      return invitation;
-                    }
-                  } catch (SQLException e) {
-                    Invites.handle(
-                        e, () -> "Could not get invitation from " + invited + " to " + leader);
-                  }
-                  return null;
-                }));
+                    SqlTeamInvitation.class,
+                    invitation ->
+                            invitation.getInvited().equals(invited)
+                                    && invitation.getLeader().equals(leader)
+                                    && invitation.getStatus().equals(status))
+            .orElseGet(() -> this.statement("SELECT * FROM `invitations` WHERE `invited`=? AND `leader`=? AND `status`=?;").execute(statement -> {
+              statement.setString(1, invited.getUniqueId().toString());
+              statement.setString(2, leader.getUniqueId().toString());
+              statement.setString(3, status.toString());
+              ResultSet resultSet = statement.executeQuery();
+              if (resultSet.next()) {
+                SqlTeamInvitation invitation = SqlTeamInvitation.of(resultSet);
+                this.parent.getCache().add(invitation);
+                return invitation;
+              }
+              return null;
+            }).orElse(null));
+    return Optional.ofNullable(sqlTeamInvitation);
   }
 
   @Override
   public @NonNull TeamInvitation createInvitation(
-      @NonNull TeamMember leader, @NonNull TeamMember member) throws TeamException {
-    try {
-      UUID leaderUuid = leader.getUniqueId();
-      UUID memberUuid = member.getUniqueId();
-      SqlTeamInvitation invitation =
-          new SqlTeamInvitation(0, leaderUuid, memberUuid, InvitationStatus.WAITING);
-      PreparedStatement statement =
-          this.statementOf(
-              "INSERT INTO `invitations`(`invited`, `leader`, `status`) VALUES('{0}', '{1}', '{2}');",
-              Statement.RETURN_GENERATED_KEYS, memberUuid, leaderUuid, InvitationStatus.WAITING);
+      @NonNull TeamMember leader, @NonNull TeamMember invited) throws TeamException {
+    Optional<TeamInvitation> optional = this.statement("INSERT INTO `invitations`(`invited`, `leader`, `status`) VALUES(?, ?, ?);", Statement.RETURN_GENERATED_KEYS).execute(statement -> {
+      UUID invitedUniqueId = invited.getUniqueId();
+      UUID leaderUniqueId = leader.getUniqueId();
+      SqlTeamInvitation invitation = new SqlTeamInvitation(-1, invitedUniqueId, leaderUniqueId, InvitationStatus.WAITING);
+      statement.setString(1, invitedUniqueId.toString());
+      statement.setString(2, leaderUniqueId.toString());
+      statement.setString(3, InvitationStatus.WAITING.toString());
       statement.executeUpdate();
-      this.schema.updateId(this, statement, invitation);
-      this.parent.getCache().add(invitation);
+      this.parent.getSchema().updateId(statement, invitation);
       return invitation;
-    } catch (SQLException e) {
-      throw new TeamException("Invitation could not be created due to a SQLException", e);
+    });
+    if (optional.isPresent()) {
+      return optional.get();
     }
+    throw new TeamException("Invitation could not be created");
   }
 
   @Override
@@ -151,45 +133,29 @@ public class SqlInvitationsSubloader extends LazySQLSubloader implements Invitat
 
   @Override
   public boolean cancelAll(@NonNull TeamMember leader) {
-    try {
-      this.formatStatement(
-              "UPDATE `invitations` SET `status`='{0}' WHERE `leader`='{1}';",
-              InvitationStatus.CANCELLED, leader.getUniqueId())
-          .executeUpdate();
+    return this.statement("UPDATE `invitations` SET `status`=? WHERE `leader`=?;").execute(statement -> {
+      statement.setString(1, InvitationStatus.CANCELLED.toString());
+      statement.setString(2, leader.getUniqueId().toString());
+      statement.executeUpdate();
       return true;
-    } catch (SQLException e) {
-      Invites.handle(e, () -> "Could not cancel invitations for " + leader);
-      return false;
-    }
+    }).orElse(false);
   }
 
   @Override
-  public @NonNull Collection<? extends TeamInvitation> getInvitations(
+  public @NonNull List<SqlTeamInvitation> getInvitations(
       @NonNull TeamMember member, @NonNull InvitationStatus status) {
-    try {
-      return this.getInvitations(
-          this.formatStatement(
-                  "SELECT * FROM `invitations` WHERE `invited`='{0}' AND `status`='{1}';",
-                  member.getUniqueId(), status)
-              .executeQuery());
-    } catch (SQLException e) {
-      Invites.handle(
-          e, () -> "There's been an error while trying to get invitations for " + member);
-    }
-    return new ArrayList<>();
+    return this.statement("SELECT * FROM `invitations` WHERE `invited`=? AND `status`=?;").execute(statement -> {
+      statement.setString(1, member.getUniqueId().toString());
+      statement.setString(2, status.toString());
+      return this.getInvitations(statement.executeQuery());
+    }).orElseGet(ArrayList::new);
   }
 
   public static class Builder implements LazySQLSubloaderBuilder {
 
-    @NonNull private final LazySchema schema;
-
-    public Builder(@NonNull LazySchema schema) {
-      this.schema = schema;
-    }
-
     @Override
     public SqlInvitationsSubloader build(@NonNull LazySQL parent) {
-      return new SqlInvitationsSubloader(parent, this.schema);
+      return new SqlInvitationsSubloader(parent);
     }
   }
 }

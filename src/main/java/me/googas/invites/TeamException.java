@@ -8,4 +8,8 @@ public class TeamException extends StarboxException {
   public TeamException(@NonNull String message, @NonNull Throwable cause) {
     super(message, cause);
   }
+
+  public TeamException(@NonNull String message) {
+
+  }
 }

@@ -26,7 +26,7 @@ public class TeamProvider
     Optional<? extends Team> optional =
         Invites.getLoader()
             .getSubloader(TeamsSubloader.class)
-            .getTeam(context.get(string, int.class, context));
+            .getTeam(context.get(string, Integer.class, context));
     if (optional.isPresent()) {
       return optional.get();
     }

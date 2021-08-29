@@ -11,7 +11,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import lombok.NonNull;
-import me.googas.invites.Invites;
 import me.googas.invites.MembersSubloader;
 import me.googas.invites.Team;
 import me.googas.invites.TeamRole;
@@ -32,15 +31,10 @@ public class SqlMembersSubloader extends LazySQLSubloader implements MembersSubl
   }
 
   public @NonNull List<SqlTeamMember> getMembers(@NonNull Team team) {
-    try {
-      return this.getMembers(
-          this.formatStatement("SELECT * FROM `members` WHERE `team`={0};", team.getId())
-              .executeQuery());
-    } catch (SQLException e) {
-      Invites.handle(
-          e, () -> "There's been an error while trying to get a members for team: " + team.getId());
-    }
-    return new ArrayList<>();
+    return this.statement("SELECT * FROM `members` WHERE `team`=?;").execute(statement -> {
+      statement.setInt(1, team.getId());
+      return this.getMembers(statement.executeQuery());
+    }).orElseGet(ArrayList::new);
   }
 
   @NonNull
@@ -67,10 +61,7 @@ public class SqlMembersSubloader extends LazySQLSubloader implements MembersSubl
   }
 
   public boolean setTeam(@NonNull SqlTeamMember member, Team team, TeamRole role) {
-    try {
-      PreparedStatement statement =
-          this.formatStatement(
-              "UPDATE `members` SET `team`=?, `role`=? WHERE `uuid`='{0}';", member.getUniqueId());
+    return this.statement("UPDATE `members` SET `team`=?, `role`=? WHERE `uuid`=?;").execute(statement -> {
       if (team == null) {
         statement.setNull(1, Types.INTEGER);
       } else {
@@ -81,12 +72,10 @@ public class SqlMembersSubloader extends LazySQLSubloader implements MembersSubl
       } else {
         statement.setString(2, role.toString());
       }
+      statement.setString(3, member.getUniqueId().toString());
       statement.executeUpdate();
       return true;
-    } catch (SQLException e) {
-      Invites.handle(e, () -> "Could not set team for: " + member.getUniqueId());
-      return false;
-    }
+    }).orElse(false);
   }
 
   @NonNull
@@ -99,32 +88,21 @@ public class SqlMembersSubloader extends LazySQLSubloader implements MembersSubl
                 catchable -> catchable.getUniqueId().equals(player.getUniqueId()),
                 true)
             .orElseGet(
-                () -> {
-                  SqlTeamMember member = null;
-                  try {
-                    PreparedStatement statement =
-                        this.formatStatement(
-                            "SELECT * FROM `members` WHERE `uuid`='{0}' LIMIT 1;",
-                            player.getUniqueId());
-                    ResultSet resultSet = statement.executeQuery();
-                    if (resultSet.next()) {
-                      member = SqlTeamMember.of(resultSet);
-                    } else {
-                      member = new SqlTeamMember(player.getUniqueId(), 0, null);
-                      this.formatStatement(
-                              "INSERT INTO `members`(`uuid`) VALUES('{0}');", player.getUniqueId())
-                          .execute();
-                    }
-                    this.parent.getCache().add(member);
-                  } catch (SQLException e) {
-                    Invites.handle(
-                        e,
-                        () ->
-                            "There's been an error while trying to get a member for: "
-                                + player.getUniqueId());
+                () -> this.statement("SELECT * FROM `members` WHERE `uuid`=? LIMIT 1;").execute(statement -> {
+                  statement.setString(1, player.getUniqueId().toString());
+                  ResultSet query = statement.executeQuery();
+                  if (query.next()) {
+                      return SqlTeamMember.of(query);
+                  } else {
+                    return this.statement("INSERT INTO `members`(`uuid`) VALUES(?);").execute(insert -> {
+                      insert.setString(1, player.getUniqueId().toString());
+                      insert.execute();
+                      SqlTeamMember member = new SqlTeamMember(player.getUniqueId(), -1, null);
+                      this.parent.getCache().add(member);
+                      return member;
+                    }).orElseThrow(() -> new IllegalStateException("Could not create a new user"));
                   }
-                  return member;
-                });
+                }).orElse(null));
     return Objects.requireNonNull(
         sqlMember,
         "There seems to been an error while trying to get a member for: " + player.getUniqueId());
@@ -132,25 +110,19 @@ public class SqlMembersSubloader extends LazySQLSubloader implements MembersSubl
 
   @Override
   public @NonNull List<SqlTeamMember> getLeaders() {
-    try {
-      return this.getMembers(
-          this.formatStatement("SELECT * FROM `members` WHERE `role`='{0}';", TeamRole.LEADER)
-              .executeQuery());
-    } catch (SQLException e) {
-      Invites.handle(e, () -> "There's been an error while trying to get leaders");
-    }
-    return new ArrayList<>();
+    return this.statement("SELECT * FROM `members` WHERE `role`=?;").execute(statement -> {
+      statement.setString(1, TeamRole.LEADER.toString());
+      return this.getMembers(statement.executeQuery());
+    }).orElseGet(ArrayList::new);
   }
 
   @Override
-  public @NonNull SqlMembersSubloader createTable() throws SQLException {
-    this.statementOf(
-            "CREATE TABLE IF NOT EXISTS `members` ("
-                + "`uuid` VARCHAR(36) NOT NULL,"
-                + "`team` INT DEFAULT NULL,"
-                + "`role` VARCHAR(50) DEFAULT 'NORMAL',"
-                + "PRIMARY KEY (`uuid`));")
-        .execute();
+  public @NonNull SqlMembersSubloader createTable() {
+    this.statement("CREATE TABLE IF NOT EXISTS `members` ("
+            + "`uuid` VARCHAR(36) NOT NULL,"
+            + "`team` INT DEFAULT NULL,"
+            + "`role` VARCHAR(50) DEFAULT 'NORMAL',"
+            + "PRIMARY KEY (`uuid`));").execute(PreparedStatement::execute);
     return this;
   }
 

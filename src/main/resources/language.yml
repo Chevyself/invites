@@ -155,6 +155,7 @@ invitations:
     not: "&e&o⚠&c&o Your team could not be renamed"
   disband:
     done: "&2Your team has been disbanded"
+    not: "&e&o⚠&c&o Your team could not be disbanded"
     no-team: "&e&o⚠&c&o Your team could not be disbanded"
   kick:
     kicked: "&a{0}&2 has been kicked"
@@ -167,7 +168,7 @@ invitations:
   manager:
     rename:
       renamed: "&a%team%&2 has been renamed to &a%name%"
-      not: "&e&o⚠&c&o &4&o{0}%team% could not be renamed to &4&o{0}%name%"
+      not: "&e&o⚠&c&o &4&o%team%&c&o could not be renamed to &4&o%name%"
     move:
       left:
         success: "&a{0}&2 has been kicked from its team"

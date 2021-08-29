@@ -17,13 +17,14 @@ import me.googas.invites.commands.providers.TeamMemberProvider;
 import me.googas.invites.commands.providers.TeamProvider;
 import me.googas.invites.modules.NotificationsModule;
 import me.googas.invites.modules.compatibilities.PGMCompatibility;
-import me.googas.invites.sql.LazySchema;
+import me.googas.invites.sql.PropertiesSchemaSupplier;
 import me.googas.invites.sql.SqlInvitationsSubloader;
 import me.googas.invites.sql.SqlMembersSubloader;
 import me.googas.invites.sql.SqlTeamsSubloader;
 import me.googas.io.StarboxFile;
 import me.googas.lazy.Loader;
 import me.googas.lazy.sql.LazySQL;
+import me.googas.lazy.sql.LazySchema;
 import me.googas.starbox.BukkitYamlLanguage;
 import me.googas.starbox.Starbox;
 import me.googas.starbox.compatibilities.Compatibility;
@@ -60,22 +61,19 @@ public class InvitesPlugin extends JavaPlugin {
     try {
       String url = config.getString("url", "file");
       LazySQL.LazySQLBuilder builder;
-      LazySchema schema;
       if (url.equals("file")) {
         Class.forName("org.sqlite.JDBC");
-        builder = LazySQL.at(new StarboxFile(pluginFolder, "database"), "sqlite");
-        schema = LazySchema.of(loader, LazySchema.Type.SQLITE);
+        builder = LazySQL.at(new StarboxFile(pluginFolder, "database"), new LazySchema(LazySchema.Type.SQLITE, PropertiesSchemaSupplier.of(loader.getResource("schemas/sqlite.properties"))));
       } else {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        builder = LazySQL.at("jdbc:" + config.getString("url"));
-        schema = LazySchema.of(loader, LazySchema.Type.SQL);
+        builder = LazySQL.at("jdbc:" + config.getString("url")).setSchema(new LazySchema(LazySchema.Type.SQL, PropertiesSchemaSupplier.of(loader.getResource("schemas/sql.properties"))));
       }
       this.loader =
           builder
               .add(
-                  new SqlInvitationsSubloader.Builder(schema),
+                  new SqlInvitationsSubloader.Builder(),
                   new SqlMembersSubloader.Builder(),
-                  new SqlTeamsSubloader.Builder(schema))
+                  new SqlTeamsSubloader.Builder())
               .build()
               .start();
     } catch (SQLException | ClassNotFoundException e) {

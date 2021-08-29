@@ -81,7 +81,7 @@
         <dependency>
             <groupId>me.googas.lazy-db</groupId>
             <artifactId>sql</artifactId>
-            <version>fe37d085a1</version>
+            <version>54f756532c</version>
             <exclusions>
                 <exclusion>
                     <groupId>me.googas.starbox</groupId>

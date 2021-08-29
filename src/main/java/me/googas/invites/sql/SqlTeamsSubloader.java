@@ -18,65 +18,54 @@ import me.googas.lazy.sql.LazySQLSubloaderBuilder;
 
 public class SqlTeamsSubloader extends LazySQLSubloader implements TeamsSubloader {
 
-  @NonNull private final LazySchema schema;
-
   /**
    * Start the subloader.
    *
    * @param parent the sql parent
-   * @param schema
    */
-  protected SqlTeamsSubloader(@NonNull LazySQL parent, @NonNull LazySchema schema) {
+  protected SqlTeamsSubloader(@NonNull LazySQL parent) {
     super(parent);
-    this.schema = schema;
   }
 
   public boolean disband(@NonNull SqlTeam team) {
-    try {
-      PreparedStatement statement =
-          this.formatStatement("DELETE FROM `teams` WHERE `id`={0};", team.getId());
+    return this.statement("DELETE FROM `teams` WHERE `id`=?;").execute(statement -> {
+      statement.setInt(1, team.getId());
       statement.executeUpdate();
       this.parent.getCache().remove(team);
       return true;
-    } catch (SQLException e) {
-      Invites.handle(e, () -> "Could not delete team: " + team.getId());
-    }
-    return false;
+    }).orElse(false);
   }
 
   public boolean rename(@NonNull SqlTeam team, @NonNull String name) {
-    try {
-      return this.formatStatement(
-                  "UPDATE `teams` SET `name`='{0}' WHERE `id`={1};", name, team.getId())
-              .executeUpdate()
-          > 0;
-    } catch (SQLException e) {
-      Invites.handle(e, () -> "Could not update name for team " + team);
-    }
-    return false;
+    return this.statement("UPDATE `teams` SET `name`=? WHERE `id`=?;").execute(statement -> {
+      statement.setString(1, name);
+      statement.setInt(2, team.getId());
+      return statement.executeUpdate() > 0;
+    }).orElse(false);
   }
 
   @Override
   public @NonNull SqlTeamsSubloader createTable() throws SQLException {
-    this.statementOf(this.schema.getSql("teams.create-table")).execute();
+    this.statementWithKey("teams.create-table").execute(PreparedStatement::execute);
     return this;
   }
 
   @Override
   public @NonNull Team createTeam(@NonNull String name, @NonNull TeamMember leader)
       throws TeamException {
-    try {
-      SqlTeam team = new SqlTeam(0, name);
-      PreparedStatement statement =
-          this.statementOf(
-              "INSERT INTO `teams` (`name`) VALUES('{0}');", Statement.RETURN_GENERATED_KEYS, name);
+    Optional<SqlTeam> optional = this.statement("INSERT INTO `teams` (`name`) VALUES(?);", Statement.RETURN_GENERATED_KEYS).execute(statement -> {
+      SqlTeam team = new SqlTeam(-1, name);
+      statement.setString(1, name);
       statement.executeUpdate();
-      this.schema.updateId(this, statement, team);
-      leader.setTeam(team, TeamRole.LEADER);
+      this.parent.getSchema().updateId(statement, team);
       this.parent.getCache().add(team);
+      leader.setTeam(team, TeamRole.LEADER);
       return team;
-    } catch (SQLException e) {
-      throw new TeamException("Team could not be created due to a SQLException", e);
+    });
+    if (optional.isPresent()) {
+      return optional.get();
+    } else {
+      throw new TeamException("Team could not be created");
     }
   }
 
@@ -87,21 +76,18 @@ public class SqlTeamsSubloader extends LazySQLSubloader implements TeamsSubloade
             .getCache()
             .get(SqlTeam.class, team -> team.getId() == id)
             .orElseGet(
-                () -> {
-                  try {
-                    ResultSet resultSet =
-                        this.formatStatement("SELECT * FROM `teams` WHERE `id`={0};", id)
-                            .executeQuery();
-                    if (resultSet.next()) {
-                      SqlTeam team = SqlTeam.of(resultSet);
+                () ->
+                  this.statement("SELECT * FROM `teams` WHERE `id`=?;").execute(statement -> {
+                    statement.setInt(1, id);
+                    ResultSet query = statement.executeQuery();
+                    if (query.next()) {
+                      SqlTeam team = SqlTeam.of(query);
                       this.parent.getCache().add(team);
                       return team;
                     }
-                  } catch (SQLException e) {
-                    Invites.handle(e, () -> "Could not get team for: " + id);
-                  }
-                  return null;
-                }));
+                    return null;
+                  }).orElse(null)
+                ));
   }
 
   @Override
@@ -111,37 +97,26 @@ public class SqlTeamsSubloader extends LazySQLSubloader implements TeamsSubloade
             .getCache()
             .get(SqlTeam.class, team -> team.getName().equalsIgnoreCase(name))
             .orElseGet(
-                () -> {
-                  try {
-                    ResultSet resultSet =
-                        this.formatStatement(
-                                "SELECT DISTINCT * FROM `teams` WHERE LOWER(`name`) LIKE LOWER('{0}');",
-                                name)
-                            .executeQuery();
-                    if (resultSet.next()) {
-                      SqlTeam team = SqlTeam.of(resultSet);
+                () ->
+                  this.statement("SELECT DISTINCT * FROM `teams` WHERE LOWER(`name`) LIKE LOWER(?);").execute(statement -> {
+                    statement.setString(1, name);
+                    ResultSet query = statement.executeQuery();
+                    if (query.next()) {
+                      SqlTeam team = SqlTeam.of(query);
                       this.parent.getCache().add(team);
                       return team;
                     }
-                  } catch (SQLException e) {
-                    Invites.handle(e, () -> "Could not get team by the name: " + name);
-                  }
-                  return null;
-                }));
+                    return null;
+                  }).orElse(null)
+                  ));
   }
 
   public static class Builder implements LazySQLSubloaderBuilder {
 
-    @NonNull private final LazySchema schema;
-
-    public Builder(@NonNull LazySchema schema) {
-      this.schema = schema;
-    }
-
     @Override
     @NonNull
     public SqlTeamsSubloader build(@NonNull LazySQL parent) {
-      return new SqlTeamsSubloader(parent, this.schema);
+      return new SqlTeamsSubloader(parent);
     }
   }
 }
