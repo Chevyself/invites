@@ -5,8 +5,9 @@ import lombok.NonNull;
 import lombok.Setter;
 import me.googas.invites.TeamMember;
 import me.googas.invites.events.InvitesCancellable;
+import me.googas.invites.events.InvitesEvent;
 
-public class AsyncTeamPreCreationEvent implements InvitesCancellable {
+public class AsyncTeamPreCreationEvent extends InvitesEvent implements InvitesCancellable {
 
   @NonNull @Getter private final TeamMember user;
   @NonNull @Getter private final String name;
