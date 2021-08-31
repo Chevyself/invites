@@ -9,6 +9,7 @@ import me.googas.invites.Team;
 import me.googas.invites.TeamMember;
 import me.googas.starbox.builders.MapBuilder;
 import me.googas.starbox.modules.Module;
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -17,20 +18,29 @@ public class NotificationsModule implements Module {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerJoin(PlayerJoinEvent event) {
-    TeamMember member =
-        Invites.getLoader().getSubloader(MembersSubloader.class).getMember(event.getPlayer());
-    Invites.getLoader()
-        .getSubloader(InvitationsSubloader.class)
-        .getInvitations(member, InvitationStatus.WAITING)
-        .forEach(
-            invitation -> {
-              String name = invitation.getLeader().getTeam().map(Team::getName).orElse("deleted");
-              member.localized(
-                  "invitations.invite.received",
-                  MapBuilder.of("team", name)
-                      .put("member", invitation.getLeader().getName())
-                      .build());
-            });
+    Bukkit.getScheduler()
+        .runTaskLaterAsynchronously(
+            Invites.getPlugin(),
+            () -> {
+              TeamMember member =
+                  Invites.getLoader()
+                      .getSubloader(MembersSubloader.class)
+                      .getMember(event.getPlayer());
+              Invites.getLoader()
+                  .getSubloader(InvitationsSubloader.class)
+                  .getInvitations(member, InvitationStatus.WAITING)
+                  .forEach(
+                      invitation -> {
+                        String name =
+                            invitation.getLeader().getTeam().map(Team::getName).orElse("deleted");
+                        member.localized(
+                            "invitations.invite.received",
+                            MapBuilder.of("team", name)
+                                .put("member", invitation.getLeader().getName())
+                                .build());
+                      });
+            },
+            40L);
   }
 
   @Override
