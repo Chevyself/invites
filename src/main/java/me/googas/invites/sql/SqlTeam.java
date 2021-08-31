@@ -38,7 +38,7 @@ public class SqlTeam implements Team, SQLElement {
             member -> {
               if (!member.leaveTeam()) success.set(false);
             });
-    return true;
+    return success.get();
   }
 
   @Override
