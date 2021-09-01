@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import lombok.NonNull;
 import me.googas.lazy.Loader;
+import me.googas.net.cache.Cache;
 
 public class Invites {
 
@@ -39,5 +40,9 @@ public class Invites {
 
   public static Logger getLogger() {
     return Invites.getPlugin().getLogger();
+  }
+
+  public static @NonNull Cache getCache() {
+    return Invites.getPlugin().getCache();
   }
 }

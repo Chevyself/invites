@@ -3,6 +3,7 @@ package me.googas.invites;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Optional;
+import lombok.Getter;
 import lombok.NonNull;
 import me.googas.commands.bukkit.AnnotatedCommand;
 import me.googas.commands.bukkit.CommandManager;
@@ -25,12 +26,16 @@ import me.googas.io.StarboxFile;
 import me.googas.lazy.Loader;
 import me.googas.lazy.sql.LazySQL;
 import me.googas.lazy.sql.LazySchema;
+import me.googas.net.cache.Cache;
+import me.googas.net.cache.MemoryCache;
 import me.googas.starbox.BukkitYamlLanguage;
 import me.googas.starbox.Starbox;
 import me.googas.starbox.compatibilities.Compatibility;
 import me.googas.starbox.compatibilities.CompatibilityManager;
 import me.googas.starbox.modules.ModuleRegistry;
 import me.googas.starbox.modules.language.LanguageModule;
+import me.googas.starbox.scheduler.Scheduler;
+import me.googas.starbox.time.StarboxBukkitScheduler;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -38,6 +43,8 @@ public class InvitesPlugin extends JavaPlugin {
 
   @NonNull private final ModuleRegistry modules = new ModuleRegistry(this);
   @NonNull private final MessagesProvider messagesProvider = new BukkitMessagesProvider();
+  @NonNull private final Scheduler scheduler = new StarboxBukkitScheduler(this);
+  @NonNull @Getter private final Cache cache = new MemoryCache().register(this.scheduler);
 
   @NonNull
   private final CommandManager commandManager =
@@ -84,6 +91,7 @@ public class InvitesPlugin extends JavaPlugin {
                   new SqlInvitationsSubloader.Builder(),
                   new SqlMembersSubloader.Builder(),
                   new SqlTeamsSubloader.Builder())
+              .cache(this.cache)
               .build()
               .start();
     } catch (SQLException | ClassNotFoundException e) {
