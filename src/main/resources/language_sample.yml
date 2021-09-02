@@ -1,0 +1,134 @@
+invitations:
+  invite:
+    received: >
+      [
+              {
+                "color": "gray",
+                "text": "$invitations.invite.sample.received"
+              },
+              {
+                "color": "green",
+                "hoverEvent": {
+                  "action": "show_text",
+                  "value": [
+                    {
+                      "color": "gray",
+                      "text": "$invitations.invite.sample.invited-by"
+                    },
+                    {
+                      "color": "green",
+                      "text": "%member%"
+                    }
+                  ]
+                },
+                "text": "%team% "
+              },
+              {
+                "color": "dark_gray",
+                "bold": true,
+                "clickEvent": {
+                  "action": "run_command",
+                  "value": "/accept %member%"
+                },
+                "hoverEvent": {
+                  "action": "show_text",
+                  "value": [
+                    {
+                      "color": "dark_green",
+                      "text": "$invitations.invite.sample.accept"
+                    }
+                  ]
+                },
+                "text": "["
+              },
+              {
+                "color": "dark_green",
+                "bold": true,
+                "clickEvent": {
+                  "action": "run_command",
+                  "value": "/accept %member%"
+                },
+                "hoverEvent": {
+                  "action": "show_text",
+                  "value": [
+                    {
+                      "color": "dark_green",
+                      "text": "$invitations.invite.sample.accept"
+                    }
+                  ]
+                },
+                "text": "\u2713"
+              },
+              {
+                "color": "dark_gray",
+                "bold": true,
+                "clickEvent": {
+                  "action": "run_command",
+                  "value": "/accept %member%"
+                },
+                "hoverEvent": {
+                  "action": "show_text",
+                  "value": [
+                    {
+                      "color": "dark_green",
+                      "text": "$invitations.invite.sample.accept"
+                    }
+                  ]
+                },
+                "text": "] "
+              },
+              {
+                "color": "dark_gray",
+                "bold": true,
+                "clickEvent": {
+                  "action": "run_command",
+                  "value": "/deny %member%"
+                },
+                "hoverEvent": {
+                  "action": "show_text",
+                  "value": [
+                    {
+                      "color": "red",
+                      "text": "$invitations.invite.sample.deny"
+                    }
+                  ]
+                },
+                "text": "["
+              },
+              {
+                "color": "dark_red",
+                "bold": true,
+                "clickEvent": {
+                  "action": "run_command",
+                  "value": "/deny %member%"
+                },
+                "hoverEvent": {
+                  "action": "show_text",
+                  "value": [
+                    {
+                      "color": "red",
+                      "text": "$invitations.invite.sample.deny"
+                    }
+                  ]
+                },
+                "text": "\u2716"
+              },
+              {
+                "color": "dark_gray",
+                "bold": true,
+                "clickEvent": {
+                  "action": "run_command",
+                  "value": "/deny %member%"
+                },
+                "hoverEvent": {
+                  "action": "show_text",
+                  "value": [
+                    {
+                      "color": "red",
+                      "text": "$invitations.invite.sample.deny"
+                    }
+                  ]
+                },
+                "text": "]"
+              }
+            ]

@@ -31,7 +31,9 @@ public class InvitationsCommand {
           .localized("invitations.accept.accepted", invitation.getInvited().getName());
       return BukkitLine.localized(invitation.getInvited(), "invitations.accept.done").asResult();
     } else {
-      return BukkitLine.localized(invitation.getInvited(), "invitations.accept.not").asResult();
+      return BukkitLine.localized(invitation.getInvited(), "invitations.accept.not")
+          .formatSample()
+          .asResult();
     }
   }
 
@@ -46,7 +48,9 @@ public class InvitationsCommand {
     if (invitation.deny()) {
       return BukkitLine.localized(invitation.getInvited(), "invitations.deny.done").asResult();
     } else {
-      return BukkitLine.localized(invitation.getInvited(), "invitations.deny.not").asResult();
+      return BukkitLine.localized(invitation.getInvited(), "invitations.deny.not")
+          .formatSample()
+          .asResult();
     }
   }
 
@@ -79,18 +83,23 @@ public class InvitationsCommand {
             .asResult();
       } catch (TeamException e) {
         Invites.handle(e);
-        return BukkitLine.localized(leader, "invitations.invite.exception").asResult();
+        return BukkitLine.localized(leader, "invitations.invite.exception")
+            .formatSample()
+            .asResult();
       }
     } else if (team.isPresent() && (!role.isPresent() || role.get() == TeamRole.NORMAL)) {
-      return BukkitLine.localized(leader, "invitations.invite.not-leader").asResult();
+      return BukkitLine.localized(leader, "invitations.invite.not-leader")
+          .formatSample()
+          .asResult();
     } else if (team.isPresent() && memberTeam.isPresent() && team.get().equals(memberTeam.get())) {
-      return BukkitLine.localized(leader, "invitations.invite.same-team").asResult();
+      return BukkitLine.localized(leader, "invitations.invite.same-team").formatSample().asResult();
     } else if (invitation.isPresent()) {
       return BukkitLine.localized(leader, "invitations.invite.already")
           .format(member.getName())
+          .formatSample()
           .asResult();
     } else {
-      return BukkitLine.localized(leader, "invitations.invite.no-team").asResult();
+      return BukkitLine.localized(leader, "invitations.invite.no-team").formatSample().asResult();
     }
   }
 }

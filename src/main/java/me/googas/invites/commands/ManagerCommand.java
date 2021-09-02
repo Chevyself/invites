@@ -34,6 +34,7 @@ public class ManagerCommand {
     } else {
       return BukkitLine.localized(channel, "invitations.manager.rename.not")
           .format(MapBuilder.of("team", team.getName()).put("name", name).build())
+          .formatSample()
           .asResult();
     }
   }
@@ -56,6 +57,7 @@ public class ManagerCommand {
       } else {
         return BukkitLine.localized(channel, "invitations.manager.move.left.not")
             .format(name)
+            .formatSample()
             .asResult();
       }
     } else {
@@ -66,6 +68,7 @@ public class ManagerCommand {
       } else {
         return BukkitLine.localized(channel, "invitations.manager.move.not")
             .format(MapBuilder.of("team", team.getName()).put("member", name).build())
+            .formatSample()
             .asResult();
       }
     }

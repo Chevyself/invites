@@ -39,7 +39,7 @@ public class TeamInvitationProvider implements BukkitArgumentProvider<TeamInvita
       if (optional.isPresent()) {
         return optional.get();
       } else {
-        throw new ArgumentProviderException("You dont have an invitation from " + string);
+        throw new ArgumentProviderException("&cYou don't have an invitation from " + string);
       }
     }
     throw new ArgumentProviderException(context.getMessagesProvider().playersOnly(context));

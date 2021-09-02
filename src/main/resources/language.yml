@@ -1,177 +1,51 @@
 language: en
 invitations:
   accept:
-    not: "&e&o⚠&c&o Could not accept invitation from &4&o{0}"
+    not: "$error Could not accept invitation from &4&o{0}"
     done: "&aInvitation has been accepted"
     accepted: "&2Your invitation to &a{0} &2has been accepted"
   deny:
-    not: "&e&o⚠&c&o Could not deny invitation from &4&o{0}"
+    not: "$error Could not deny invitation from &4&o{0}"
     done: "&aInvitation has been denied"
   invite:
     sent: "&2Your invitation to &a{0}&2 has been sent"
-    received: >
-      [
-        {
-          "color": "gray",
-          "text": "You received an invitation to join "
-        },
-        {
-          "color": "green",
-          "hoverEvent": {
-            "action": "show_text",
-            "value": [
-              {
-                "color": "gray",
-                "text": "Invited by "
-              },
-              {
-                "color": "green",
-                "text": "%member%"
-              }
-            ]
-          },
-          "text": "%team% "
-        },
-        {
-          "color": "dark_gray",
-          "bold": true,
-          "clickEvent": {
-            "action": "run_command",
-            "value": "/accept %member%"
-          },
-          "hoverEvent": {
-            "action": "show_text",
-            "value": [
-              {
-                "color": "dark_green",
-                "text": "Accept invitation"
-              }
-            ]
-          },
-          "text": "["
-        },
-        {
-          "color": "dark_green",
-          "bold": true,
-          "clickEvent": {
-            "action": "run_command",
-            "value": "/accept %member%"
-          },
-          "hoverEvent": {
-            "action": "show_text",
-            "value": [
-              {
-                "color": "dark_green",
-                "text": "Accept invitation"
-              }
-            ]
-          },
-          "text": "\u2713"
-        },
-        {
-          "color": "dark_gray",
-          "bold": true,
-          "clickEvent": {
-            "action": "run_command",
-            "value": "/accept %member%"
-          },
-          "hoverEvent": {
-            "action": "show_text",
-            "value": [
-              {
-                "color": "dark_green",
-                "text": "Accept invitation"
-              }
-            ]
-          },
-          "text": "] "
-        },
-        {
-          "color": "dark_gray",
-          "bold": true,
-          "clickEvent": {
-            "action": "run_command",
-            "value": "/deny %member%"
-          },
-          "hoverEvent": {
-            "action": "show_text",
-            "value": [
-              {
-                "color": "red",
-                "text": "Deny invitation"
-              }
-            ]
-          },
-          "text": "["
-        },
-        {
-          "color": "dark_red",
-          "bold": true,
-          "clickEvent": {
-            "action": "run_command",
-            "value": "/deny %member%"
-          },
-          "hoverEvent": {
-            "action": "show_text",
-            "value": [
-              {
-                "color": "red",
-                "text": "Deny invitation"
-              }
-            ]
-          },
-          "text": "\u2716"
-        },
-        {
-          "color": "dark_gray",
-          "bold": true,
-          "clickEvent": {
-            "action": "run_command",
-            "value": "/deny %member%"
-          },
-          "hoverEvent": {
-            "action": "show_text",
-            "value": [
-              {
-                "color": "red",
-                "text": "Deny invitation"
-              }
-            ]
-          },
-          "text": "]"
-        }
-      ]
-    exception: "&e&o⚠&c&o Could not send the invitation due to an exception"
-    not-leader: "&e&o⚠&c&o You are not the leader of your team"
-    same-team: "&e&o⚠&c&o You are in the same team"
-    no-team: "&e&o⚠&c&o You don't have a team"
-    already: "&e&o⚠&c&o You already sent an invitation to &4&o{0}"
+    sample:
+      received: "You received an invitation to join "
+      invited-by: "Invited by "
+      accept: "Accept invitation"
+      deny: "Deny invitation"
+    exception: "$error Could not send the invitation due to an exception"
+    not-leader: "$error You are not the leader of your team"
+    same-team: "$error You are in the same team"
+    no-team: "$error You don't have a team"
+    already: "$error You already sent an invitation to &4&o{0}"
   create:
-    already: "&e&o⚠&c&o You already have a team"
-    already-name: "&e&o⚠&c&o There's already a team by the name &4{0}"
+    already: "$error You already have a team"
+    already-name: "$error There's already a team by the name &4{0}"
     created: "&2Your team &a{0} &2has been created"
+    long-name: "$error Name cannot be longer than 16 characters"
   rename:
     renamed: "&2Your team has been renamed to &a{0}"
-    not: "&e&o⚠&c&o Your team could not be renamed"
+    not: "$error Your team could not be renamed"
   disband:
     done: "&2Your team has been disbanded"
-    not: "&e&o⚠&c&o Your team could not be disbanded"
-    no-team: "&e&o⚠&c&o Your team could not be disbanded"
+    not: "$error Your team could not be disbanded"
+    no-team: "$error Your team could not be disbanded"
   kick:
     kicked: "&a{0}&2 has been kicked"
-    not: "&e&o⚠&c&o Could not kick &4&o{0}&c&o from your team"
-    not-same: "&e&o⚠&c&o Your team could not in the same team"
+    not: "$error Could not kick &4&o{0}&c&o from your team"
+    not-same: "$error Your team could not in the same team"
   leave:
     left: "&2You have left your team"
-    not: "&e&o⚠&c&o You could not leave your team"
-    leader: "&e&o⚠&c&o You are the leader of your team"
+    not: "$error You could not leave your team"
+    leader: "$error You are the leader of your team"
   manager:
     rename:
       renamed: "&a%team%&2 has been renamed to &a%name%"
-      not: "&e&o⚠&c&o &4&o%team%&c&o could not be renamed to &4&o%name%"
+      not: "$error &4&o%team%&c&o could not be renamed to &4&o%name%"
     move:
       left:
         success: "&a{0}&2 has been kicked from its team"
-        not: "&e&o⚠&4&o{0}&c&o could not be kicked from its team"
+        not: "$error &4&o{0}&c&o could not be kicked from its team"
       success: "&a%member%&2 has been moved to &a%team%"
-      not: "&e&o⚠&4&o%member%&c&o could not be moved to &4&o%team%"
+      not: "$error &4&o%member%&c&o could not be moved to &4&o%team%"

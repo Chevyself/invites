@@ -26,7 +26,6 @@ import me.googas.io.StarboxFile;
 import me.googas.lazy.Loader;
 import me.googas.lazy.sql.LazySQL;
 import me.googas.lazy.sql.LazySchema;
-import me.googas.net.cache.Cache;
 import me.googas.net.cache.MemoryCache;
 import me.googas.starbox.BukkitYamlLanguage;
 import me.googas.starbox.Starbox;
@@ -44,7 +43,7 @@ public class InvitesPlugin extends JavaPlugin {
   @NonNull private final ModuleRegistry modules = new ModuleRegistry(this);
   @NonNull private final MessagesProvider messagesProvider = new BukkitMessagesProvider();
   @NonNull private final Scheduler scheduler = new StarboxBukkitScheduler(this);
-  @NonNull @Getter private final Cache cache = new MemoryCache().register(this.scheduler);
+  @NonNull @Getter private final MemoryCache cache = new MemoryCache();
 
   @NonNull
   private final CommandManager commandManager =
@@ -61,6 +60,7 @@ public class InvitesPlugin extends JavaPlugin {
   @Override
   public void onEnable() {
     Invites.setPlugin(this);
+    this.cache.register(this.scheduler);
     ClassLoader loader = this.getClassLoader();
     StarboxFile pluginFolder = StarboxFile.of(this.getDataFolder());
     this.saveDefaultConfig();

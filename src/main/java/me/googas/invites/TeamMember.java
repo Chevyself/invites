@@ -39,4 +39,9 @@ public interface TeamMember extends Catchable, Channel {
 
   @NonNull
   Optional<TeamRole> getRole();
+
+  @NonNull
+  static TeamMember of(@NonNull OfflinePlayer player) {
+    return Invites.getLoader().getSubloader(MembersSubloader.class).getMember(player);
+  }
 }
